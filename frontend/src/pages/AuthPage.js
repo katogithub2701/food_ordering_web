@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { registerUser, loginUser } from '../services/authService';
 
 function AuthForm({ isLogin, onSubmit, switchMode }) {
   const [form, setForm] = useState({
@@ -49,23 +50,32 @@ function AuthForm({ isLogin, onSubmit, switchMode }) {
   );
 }
 
-function AuthPage({ initialMode = 'login', onClose }) {
+function AuthPage({ initialMode = 'login', onClose, setUser }) {
   const [isLogin, setIsLogin] = useState(initialMode === 'login');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleAuth = async (form) => {
-    setTimeout(() => {
+    setLoading(true);
+    setMessage('');
+    try {
       if (isLogin) {
-        if (form.username === 'user' && form.password === '123456') {
-          setMessage('Đăng nhập thành công!');
-        } else {
-          setMessage('Sai tên đăng nhập hoặc mật khẩu.');
+        const res = await loginUser({ username: form.username, password: form.password });
+        setMessage(res.message || 'Đăng nhập thành công!');
+        if (res.user) {
+          setUser(res.user);
+          setTimeout(() => { onClose(); }, 700);
         }
       } else {
-        setMessage('Đăng ký thành công! Bạn có thể đăng nhập.');
+        const res = await registerUser({ username: form.username, email: form.email, password: form.password });
+        setMessage(res.message || 'Đăng ký thành công! Bạn có thể đăng nhập.');
         setIsLogin(true);
       }
-    }, 700);
+    } catch (err) {
+      setMessage(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,6 +83,7 @@ function AuthPage({ initialMode = 'login', onClose }) {
       <div style={{ position: 'relative' }}>
         <button onClick={onClose} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', fontSize: 22, color: '#ff7043', cursor: 'pointer' }} title="Đóng">×</button>
         <AuthForm isLogin={isLogin} onSubmit={handleAuth} switchMode={() => { setIsLogin(!isLogin); setMessage(''); }} />
+        {loading && <div style={{ textAlign: 'center', marginTop: 10, color: '#888' }}>Đang xử lý...</div>}
         {message && <div style={{ textAlign: 'center', marginTop: 18, color: message.includes('thành công') ? 'green' : 'red' }}>{message}</div>}
       </div>
     </div>

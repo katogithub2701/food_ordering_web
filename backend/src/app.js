@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const sequelize = require('./config/database');
 const User = require('./models/User');
+const Food = require('./models/Food');
 
 const app = express();
 app.use(cors());
@@ -44,10 +45,99 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// API lấy danh sách món ăn
+app.get('/api/foods', async (req, res) => {
+  try {
+    const foods = await Food.findAll({
+      attributes: ['id', 'name', 'description', 'price', 'rating', 'imageUrl']
+    });
+    res.json(foods.map(food => ({
+      id: food.id,
+      name: food.name,
+      description: food.description,
+      price: food.price,
+      rating: food.rating,
+      imageUrl: food.imageUrl || ''
+    })));
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server.' });
+  }
+});
+
 console.log('Backend server starting...');
 
 // Khởi tạo DB và chạy server
 (async () => {
   await sequelize.sync();
+  // Thêm món ăn mẫu nếu chưa có
+  const foods = [
+    {
+      name: 'Phở Bò',
+      description: 'Phở bò truyền thống với nước dùng đậm đà.',
+      price: 45000,
+      rating: 4.7,
+      imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      name: 'Bún Bò Huế',
+      description: 'Bún bò Huế cay nồng, thơm ngon đặc trưng miền Trung.',
+      price: 40000,
+      rating: 4.5,
+      imageUrl: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      name: 'Cơm Tấm',
+      description: 'Cơm tấm sườn bì chả, đặc sản Sài Gòn.',
+      price: 35000,
+      rating: 4.8,
+      imageUrl: 'https://images.unsplash.com/photo-1464306076886-debca5e8a6b0?auto=format&fit=crop&w=400&q=80'
+    },
+    {
+      name: 'Gỏi Cuốn',
+      description: 'Gỏi cuốn tôm thịt tươi ngon, ăn kèm nước chấm đặc biệt.',
+      price: 25000,
+      rating: 4.3,
+      imageUrl: 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc',
+    },
+    {
+      name: 'Bánh Mì',
+      description: 'Bánh mì Việt Nam giòn rụm, nhân thịt nguội và rau thơm.',
+      price: 20000,
+      rating: 4.6,
+      imageUrl: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c',
+    },
+    // Bổ sung các món chưa có ảnh
+    {
+      name: 'Bánh Xèo',
+      description: 'Bánh xèo miền Tây vàng giòn, nhân tôm thịt, ăn kèm rau sống.',
+      price: 30000,
+      rating: 4.4,
+      imageUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836',
+    },
+    {
+      name: 'Chả Giò',
+      description: 'Chả giò chiên giòn, nhân thịt và rau củ.',
+      price: 22000,
+      rating: 4.2,
+      imageUrl: 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc',
+    },
+    {
+      name: 'Bún Chả',
+      description: 'Bún chả Hà Nội với thịt nướng và nước mắm chua ngọt.',
+      price: 40000,
+      rating: 4.7,
+      imageUrl: 'https://images.unsplash.com/photo-1464306076886-debca5e8a6b0',
+    },
+    {
+      name: 'Bánh Cuốn',
+      description: 'Bánh cuốn nóng mềm mịn, ăn kèm chả và nước mắm.',
+      price: 28000,
+      rating: 4.3,
+      imageUrl: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c',
+    }
+  ];
+  for (const food of foods) {
+    await Food.findOrCreate({ where: { name: food.name }, defaults: food });
+  }
   app.listen(5000, () => console.log('Backend server running on http://localhost:5000'));
 })();
