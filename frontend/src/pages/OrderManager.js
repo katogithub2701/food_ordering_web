@@ -21,6 +21,7 @@ function OrderManager({ user, onBackToHome }) {
       <OrderTracking 
         orderId={selectedOrderId}
         onBack={handleBackToHistory}
+        user={user}
       />
     );
   }
