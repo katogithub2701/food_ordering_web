@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AuthPage from './AuthPage';
+import OrderManager from './OrderManager';
 import { fetchFoods } from '../services/foodService';
 
 function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode }) {
@@ -7,6 +8,7 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode 
   const [loadingFoods, setLoadingFoods] = useState(true);
   const [errorFoods, setErrorFoods] = useState('');
   const [search, setSearch] = useState('');
+  const [showOrders, setShowOrders] = useState(false);
 
   useEffect(() => {
     fetchFoods()
@@ -19,9 +21,11 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode 
     food.name.toLowerCase().includes(search.toLowerCase()) ||
     food.description.toLowerCase().includes(search.toLowerCase())
   );
-
   if (showAuth) {
     return <AuthPage initialMode={authMode} onClose={() => setShowAuth(false)} setUser={setUser} />;
+  }
+  if (showOrders) {
+    return <OrderManager user={user} onBackToHome={() => setShowOrders(false)} />;
   }
 
   return (
@@ -35,10 +39,9 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode 
               <button onClick={() => { setShowAuth(true); setAuthMode('login'); }} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.6rem 1.2rem', fontWeight: 600, fontSize: 15, marginRight: 4, cursor: 'pointer', boxShadow: '0 1px 4px #0001' }}>Đăng nhập</button>
               <button onClick={() => { setShowAuth(true); setAuthMode('register'); }} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.6rem 1.2rem', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 1px 4px #0001' }}>Đăng ký</button>
             </>
-          ) : (
-            <>
+          ) : (            <>
               <span style={{ fontWeight: 600, fontSize: 16 }}>Xin chào, {user.username}!</span>
-              <button onClick={() => {}} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đơn hàng của tôi</button>
+              <button onClick={() => setShowOrders(true)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đơn hàng của tôi</button>
               <button onClick={() => setUser(null)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đăng xuất</button>
             </>
           )}

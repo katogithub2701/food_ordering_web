@@ -1,0 +1,633 @@
+/* Order Tracking Styles */
+.order-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  min-height: 100vh;
+  background: #f8fafc;
+  padding-bottom: 2rem;
+}
+
+.order-header {
+  background: linear-gradient(135deg, #ff7043 0%, #ff5722 100%);
+  color: #fff;
+  padding: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.order-header-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.back-button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.content-wrapper {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+}
+
+.status-card {
+  border: 2px solid #ff7043;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  background: transparent;
+  color: #666;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+  min-width: 120px;
+}
+
+.filter-tab.active {
+  background: #ff7043;
+  color: #fff;
+  border: none;
+}
+
+.filter-tab:hover:not(.active) {
+  background: #f5f5f5;
+}
+
+.order-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.order-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  border-color: #ff7043;
+}
+
+.timeline-container {
+  position: relative;
+}
+
+.timeline-item {
+  display: flex;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.timeline-item:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 15px;
+  top: 30px;
+  width: 2px;
+  height: 2rem;
+}
+
+.timeline-line.completed {
+  background: #66bb6a;
+}
+
+.timeline-line.pending {
+  background: #e0e0e0;
+}
+
+.timeline-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  color: #fff;
+  font-weight: bold;
+  font-size: 0.8rem;
+}
+
+.timeline-dot.completed {
+  background: #66bb6a;
+}
+
+.timeline-dot.current {
+  background: #ff7043;
+  border: 3px solid #ffccbc;
+  animation: pulse 2s infinite;
+}
+
+.timeline-dot.pending {
+  background: #e0e0e0;
+  color: #999;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 112, 67, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(255, 112, 67, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 112, 67, 0);
+  }
+}
+
+.status-badge {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  display: inline-block;
+}
+
+.status-pending {
+  background: #fff3e0;
+  color: #ffa726;
+}
+
+.status-preparing {
+  background: #e3f2fd;
+  color: #42a5f5;
+}
+
+.status-delivering {
+  background: #f3e5f5;
+  color: #ab47bc;
+}
+
+.status-completed {
+  background: #e8f5e8;
+  color: #66bb6a;
+}
+
+.status-cancelled {
+  background: #ffebee;
+  color: #ef5350;
+}
+
+.item-tag {
+  background: #f8fafc;
+  color: #666;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  border: 1px solid #e0e0e0;
+}
+
+.restaurant-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.driver-card {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.call-button {
+  background: #ff7043;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease;
+}
+
+.call-button:hover {
+  background: #f4511e;
+}
+
+.estimation-badge {
+  background: #e8f5e8;
+  color: #2e7d32;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  display: inline-block;
+}
+
+/* Enhanced Order History Styles */
+.order-history-container {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  min-height: 100vh;
+  background: #f8fafc;
+  padding-bottom: 2rem;
+}
+
+.order-history-header {
+  background: linear-gradient(135deg, #ff7043 0%, #ff5722 100%);
+  color: #fff;
+  padding: 1.5rem 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.order-history-header-content {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.order-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.order-card:hover {
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.order-card.status-pending {
+  border-left-color: #ff9800;
+}
+
+.order-card.status-preparing {
+  border-left-color: #2196f3;
+}
+
+.order-card.status-delivering {
+  border-left-color: #9c27b0;
+}
+
+.order-card.status-completed {
+  border-left-color: #4caf50;
+}
+
+.order-card.status-cancelled {
+  border-left-color: #f44336;
+}
+
+.order-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.restaurant-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.restaurant-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #ff7043;
+}
+
+.restaurant-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0;
+}
+
+.order-date {
+  font-size: 0.85rem;
+  color: #666;
+  margin: 0.25rem 0 0 0;
+}
+
+.order-status {
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 80px;
+}
+
+.status-pending {
+  background: #fff3e0;
+  color: #f57c00;
+}
+
+.status-preparing {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.status-delivering {
+  background: #f3e5f5;
+  color: #7b1fa2;
+}
+
+.status-completed {
+  background: #e8f5e8;
+  color: #388e3c;
+}
+
+.status-cancelled {
+  background: #ffebee;
+  color: #d32f2f;
+}
+
+.order-items {
+  margin: 1rem 0;
+}
+
+.order-item-summary {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+
+.order-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  font-weight: 600;
+  color: #333;
+}
+
+.total-amount {
+  color: #ff7043;
+  font-size: 1.1rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #f0f0f0;
+  border-top: 3px solid #ff7043;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.no-orders {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+.no-orders-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+/* Orders List */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Enhanced OrderTracking Timeline */
+.timeline-container {
+  position: relative;
+  padding-left: 2rem;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 2rem;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -2rem;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: #e0e0e0;
+}
+
+.timeline-item:last-child::before {
+  height: 30px;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -2.5rem;
+  top: 0;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #e0e0e0;
+  z-index: 1;
+}
+
+.timeline-dot.completed {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
+.timeline-dot.current {
+  background: #ff7043;
+  border-color: #ff7043;
+  animation: pulse 2s infinite;
+}
+
+.timeline-content {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.timeline-time {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.timeline-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.timeline-description {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .order-header-content {
+    padding: 0 1rem;
+  }
+  
+  .content-wrapper {
+    padding: 0 1rem;
+  }
+  
+  .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .filter-tabs {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .filter-tab {
+    min-width: auto;
+  }
+  
+  .order-item {
+    padding: 1rem;
+  }
+  
+  .restaurant-avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1.2rem;
+  }
+  
+  .timeline-dot {
+    width: 25px;
+    height: 25px;
+    font-size: 0.7rem;
+  }
+  
+  .timeline-line {
+    left: 12px;
+  }
+  
+  .order-history-header-content {
+    padding: 0 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-header {
+    padding: 1rem 0;
+  }
+  
+  .order-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .content-wrapper {
+    margin: 1rem auto;
+  }
+  
+  .card {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+  
+  .status-card {
+    text-align: center;
+  }
+  
+  .driver-card {
+    padding: 0.75rem;
+  }
+  
+  .call-button {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  
+  .order-card {
+    margin: 0 -0.5rem 1rem -0.5rem;
+    border-radius: 8px;
+  }
+  
+  .restaurant-info {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .restaurant-logo {
+    align-self: center;
+  }
+}
