@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { registerUser, loginUser } from '../services/authService';
+import '../styles/AuthPage.css';
 
 function AuthForm({ isLogin, onSubmit, switchMode }) {
   const [form, setForm] = useState({
@@ -24,27 +25,27 @@ function AuthForm({ isLogin, onSubmit, switchMode }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} style={{ maxWidth: 350, margin: '0 auto', background: '#fff', borderRadius: 10, boxShadow: '0 2px 12px #0001', padding: 32 }}>
-      <h2 style={{ textAlign: 'center', color: '#ff7043', marginBottom: 24 }}>{isLogin ? 'Đăng nhập' : 'Đăng ký'}</h2>
+    <form className="auth-form" onSubmit={handleSubmit}>
+      <h2 className="auth-title">{isLogin ? 'Đăng nhập' : 'Đăng ký'}</h2>
       {!isLogin && (
-        <div style={{ marginBottom: 16 }}>
-          <label>Email</label>
-          <input type="email" name="email" value={form.email} onChange={handleChange} style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+        <div className="auth-field">
+          <label htmlFor="email">Email</label>
+          <input type="email" id="email" name="email" value={form.email} onChange={handleChange} className="auth-input" autoComplete="email" />
         </div>
       )}
-      <div style={{ marginBottom: 16 }}>
-        <label>Tên đăng nhập</label>
-        <input type="text" name="username" value={form.username} onChange={handleChange} style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+      <div className="auth-field">
+        <label htmlFor="username">Tên đăng nhập</label>
+        <input type="text" id="username" name="username" value={form.username} onChange={handleChange} className="auth-input" autoComplete="username" />
       </div>
-      <div style={{ marginBottom: 16 }}>
-        <label>Mật khẩu</label>
-        <input type="password" name="password" value={form.password} onChange={handleChange} style={{ width: '100%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }} />
+      <div className="auth-field">
+        <label htmlFor="password">Mật khẩu</label>
+        <input type="password" id="password" name="password" value={form.password} onChange={handleChange} className="auth-input" autoComplete={isLogin ? 'current-password' : 'new-password'} />
       </div>
-      {error && <div style={{ color: 'red', marginBottom: 12 }}>{error}</div>}
-      <button type="submit" style={{ width: '100%', background: '#ff7043', color: '#fff', border: 'none', borderRadius: 4, padding: '0.7rem', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>{isLogin ? 'Đăng nhập' : 'Đăng ký'}</button>
-      <div style={{ textAlign: 'center', marginTop: 16 }}>
+      {error && <div className="auth-error">{error}</div>}
+      <button type="submit" className="auth-btn-main">{isLogin ? 'Đăng nhập' : 'Đăng ký'}</button>
+      <div className="auth-switch">
         <span>{isLogin ? 'Chưa có tài khoản?' : 'Đã có tài khoản?'}</span>
-        <button type="button" onClick={switchMode} style={{ background: 'none', border: 'none', color: '#ff7043', marginLeft: 8, cursor: 'pointer', textDecoration: 'underline' }}>{isLogin ? 'Đăng ký' : 'Đăng nhập'}</button>
+        <button type="button" className="auth-btn-switch" onClick={switchMode}>{isLogin ? 'Đăng ký' : 'Đăng nhập'}</button>
       </div>
     </form>
   );
@@ -79,12 +80,13 @@ function AuthPage({ initialMode = 'login', onClose, setUser }) {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'fixed', inset: 0, zIndex: 100 }}>
-      <div style={{ position: 'relative' }}>
-        <button onClick={onClose} style={{ position: 'absolute', top: 8, right: 8, background: 'none', border: 'none', fontSize: 22, color: '#ff7043', cursor: 'pointer' }} title="Đóng">×</button>
+    <div className="auth-modal-bg">
+      <div className="auth-modal">
+        <button onClick={onClose} className="auth-close-btn" title="Đóng">×</button>
+        {/* Optionally add a logo or illustration here */}
         <AuthForm isLogin={isLogin} onSubmit={handleAuth} switchMode={() => { setIsLogin(!isLogin); setMessage(''); }} />
-        {loading && <div style={{ textAlign: 'center', marginTop: 10, color: '#888' }}>Đang xử lý...</div>}
-        {message && <div style={{ textAlign: 'center', marginTop: 18, color: message.includes('thành công') ? 'green' : 'red' }}>{message}</div>}
+        {loading && <div className="auth-loading">Đang xử lý...</div>}
+        {message && <div className={message.includes('thành công') ? 'auth-success' : 'auth-error'}>{message}</div>}
       </div>
     </div>
   );
