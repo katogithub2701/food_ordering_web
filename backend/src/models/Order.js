@@ -14,12 +14,28 @@ const Order = sequelize.define('Order', {
     type: DataTypes.FLOAT,
     allowNull: false
   },
-  // Trạng thái đơn hàng
+  // Trạng thái đơn hàng  
   status: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM(
+      'pending',
+      'confirmed', 
+      'preparing',
+      'ready_for_pickup',
+      'picked_up',
+      'delivering',
+      'delivered',
+      'completed',
+      'cancelled',
+      'delivery_failed',
+      'returning',
+      'returned',
+      'refunded'
+    ),
     allowNull: false,
     defaultValue: 'pending'
   }
+}, {
+  timestamps: true // This will create createdAt and updatedAt automatically
 });
 
 const OrderItem = sequelize.define('OrderItem', {

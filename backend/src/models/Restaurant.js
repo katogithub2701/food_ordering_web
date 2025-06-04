@@ -6,6 +6,7 @@ const Restaurant = sequelize.define('Restaurant', {
     type: DataTypes.STRING,
     allowNull: false
   },
+<<<<<<< HEAD
   description: {
     type: DataTypes.TEXT,
     allowNull: true
@@ -46,6 +47,12 @@ const Restaurant = sequelize.define('Restaurant', {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: true
+=======
+  avgRating: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: null
+>>>>>>> 34d5825872cad1a6e7d0d493d3769f5798aeb56a
   }
 });
 

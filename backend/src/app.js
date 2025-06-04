@@ -55,7 +55,19 @@ app.post('/api/login', async (req, res) => {
     const bcrypt = require('bcryptjs');
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu.' });
-    res.json({ message: 'Đăng nhập thành công!', user: { username: user.username, email: user.email } });
+    
+    // Generate JWT token
+    const token = generateToken(user.id);
+    
+    res.json({ 
+      message: 'Đăng nhập thành công!', 
+      user: { 
+        id: user.id,
+        username: user.username, 
+        email: user.email 
+      },
+      token
+    });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server.' });
   }
@@ -81,7 +93,7 @@ app.get('/api/foods', async (req, res) => {
 });
 
 // API lấy danh sách đơn hàng của user
-app.get('/api/orders', async (req, res) => {
+app.get('/api/user-orders', async (req, res) => {
   const { username } = req.query;
   if (!username) return res.status(400).json({ message: 'Thiếu username.' });
   try {

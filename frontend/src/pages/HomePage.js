@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import AuthPage from './AuthPage';
+<<<<<<< HEAD
 import SearchPage from './SearchPage';
 import RestaurantDetailPage from './RestaurantDetailPage';
 import CartIcon from '../components/CartIcon';
 import CartSidebar from '../components/CartSidebar';
 import { CartProvider, useCart } from '../contexts/CartContext';
+=======
+import OrderManager from './OrderManager';
+>>>>>>> 34d5825872cad1a6e7d0d493d3769f5798aeb56a
 import { fetchFoods } from '../services/foodService';
 import { fetchRestaurants } from '../services/restaurantService';
 
@@ -16,10 +20,14 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
   const [errorFoods, setErrorFoods] = useState('');
   const [errorRestaurants, setErrorRestaurants] = useState('');
   const [search, setSearch] = useState('');
+<<<<<<< HEAD
   const [showSearch, setShowSearch] = useState(false);
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const [showCartSidebar, setShowCartSidebar] = useState(false);
   const { addItem } = useCart();
+=======
+  const [showOrders, setShowOrders] = useState(false);
+>>>>>>> 34d5825872cad1a6e7d0d493d3769f5798aeb56a
 
   useEffect(() => {
     fetchFoods()
@@ -37,6 +45,7 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
     food.name.toLowerCase().includes(search.toLowerCase()) ||
     food.description.toLowerCase().includes(search.toLowerCase())
   );
+<<<<<<< HEAD
 
   const handleAddToCart = async (foodId) => {
     if (!user) {
@@ -55,8 +64,13 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
     }
   };
 
+=======
+>>>>>>> 34d5825872cad1a6e7d0d493d3769f5798aeb56a
   if (showAuth) {
     return <AuthPage initialMode={authMode} onClose={() => setShowAuth(false)} setUser={setUser} />;
+  }
+  if (showOrders) {
+    return <OrderManager user={user} onBackToHome={() => setShowOrders(false)} />;
   }
 
   if (showSearch) {
@@ -81,14 +95,17 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
               <button onClick={() => { setShowAuth(true); setAuthMode('login'); }} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.6rem 1.2rem', fontWeight: 600, fontSize: 15, marginRight: 4, cursor: 'pointer', boxShadow: '0 1px 4px #0001' }}>Đăng nhập</button>
               <button onClick={() => { setShowAuth(true); setAuthMode('register'); }} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.6rem 1.2rem', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 1px 4px #0001' }}>Đăng ký</button>
             </>
-          ) : (
-            <>
+          ) : (            <>
               <span style={{ fontWeight: 600, fontSize: 16 }}>Xin chào, {user.username}!</span>
+<<<<<<< HEAD
               <CartIcon 
                 onClick={() => setShowCartSidebar(true)}
                 style={{ color: '#fff' }}
               />
               <button onClick={() => {}} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đơn hàng của tôi</button>
+=======
+              <button onClick={() => setShowOrders(true)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đơn hàng của tôi</button>
+>>>>>>> 34d5825872cad1a6e7d0d493d3769f5798aeb56a
               <button onClick={() => setUser(null)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đăng xuất</button>
             </>
           )}
