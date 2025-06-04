@@ -38,6 +38,7 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode 
           ) : (
             <>
               <span style={{ fontWeight: 600, fontSize: 16 }}>Xin chào, {user.username}!</span>
+              <button onClick={() => {}} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đơn hàng của tôi</button>
               <button onClick={() => setUser(null)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đăng xuất</button>
             </>
           )}

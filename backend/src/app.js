@@ -6,6 +6,7 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const User = require('./models/User');
 const Food = require('./models/Food');
+const { Order, OrderItem } = require('./models/Order');
 
 const app = express();
 app.use(cors());
@@ -58,6 +59,39 @@ app.get('/api/foods', async (req, res) => {
       price: food.price,
       rating: food.rating,
       imageUrl: food.imageUrl || ''
+    })));
+  } catch (err) {
+    res.status(500).json({ message: 'Lỗi server.' });
+  }
+});
+
+// API lấy danh sách đơn hàng của user
+app.get('/api/orders', async (req, res) => {
+  const { username } = req.query;
+  if (!username) return res.status(400).json({ message: 'Thiếu username.' });
+  try {
+    const user = await User.findOne({ where: { username } });
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy user.' });
+    const orders = await Order.findAll({
+      where: { userId: user.id },
+      include: [{
+        model: OrderItem,
+        include: [{ model: Food }]
+      }],
+      order: [['createdAt', 'DESC']]
+    });
+    res.json(orders.map(order => ({
+      id: order.id,
+      total: order.total,
+      status: order.status,
+      createdAt: order.createdAt,
+      items: order.OrderItems.map(item => ({
+        id: item.id,
+        foodName: item.Food?.name,
+        quantity: item.quantity,
+        price: item.price,
+        imageUrl: item.Food?.imageUrl
+      }))
     })));
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server.' });
