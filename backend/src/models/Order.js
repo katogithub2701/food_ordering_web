@@ -13,12 +13,62 @@ const Order = sequelize.define('Order', {
   total: {
     type: DataTypes.FLOAT,
     allowNull: false
-  },
-  // Trạng thái đơn hàng
+  },  // Trạng thái đơn hàng
   status: {
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM(
+      'pending',
+      'confirmed', 
+      'preparing',
+      'ready_for_pickup',
+      'picked_up',
+      'delivering',
+      'delivered',
+      'completed',
+      'cancelled',
+      'delivery_failed',
+      'returning',
+      'returned',
+      'refunded'
+    ),
     allowNull: false,
     defaultValue: 'pending'
+  },
+  // Thời gian tạo đơn hàng
+  createdAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  // Thời gian cập nhật trạng thái cuối cùng
+  updatedAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+    defaultValue: DataTypes.NOW
+  },
+  // Ghi chú từ khách hàng
+  customerNotes: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  // Lý do hủy đơn (nếu có)
+  cancellationReason: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  // Thời gian giao hàng dự kiến
+  estimatedDeliveryTime: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  // Địa chỉ giao hàng
+  deliveryAddress: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  // Số điện thoại liên hệ
+  contactPhone: {
+    type: DataTypes.STRING,
+    allowNull: true
   }
 });
 

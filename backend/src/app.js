@@ -7,6 +7,8 @@ const sequelize = require('./config/database');
 const User = require('./models/User');
 const Food = require('./models/Food');
 const { Order, OrderItem } = require('./models/Order');
+const OrderStatusHistory = require('./models/OrderStatusHistory');
+const orderStatusRoutes = require('./api/orderStatusRoutes');
 
 const app = express();
 app.use(cors());
@@ -66,7 +68,7 @@ app.get('/api/foods', async (req, res) => {
 });
 
 // API lấy danh sách đơn hàng của user
-app.get('/api/orders', async (req, res) => {
+app.get('/api/user-orders', async (req, res) => {
   const { username } = req.query;
   if (!username) return res.status(400).json({ message: 'Thiếu username.' });
   try {
@@ -97,6 +99,9 @@ app.get('/api/orders', async (req, res) => {
     res.status(500).json({ message: 'Lỗi server.' });
   }
 });
+
+// Sử dụng order status routes
+app.use('/api/orders', orderStatusRoutes);
 
 console.log('Backend server starting...');
 

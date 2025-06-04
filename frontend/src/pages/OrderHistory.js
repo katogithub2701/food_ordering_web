@@ -1,24 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/OrderTracking.css';
+import { 
+  getStatusLabel, 
+  isActiveStatus,
+  isCompletedStatus,
+  isCancelledStatus 
+} from '../utils/orderStatus';
 
 function OrderHistory({ user, onOrderClick, onBackToHome }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
 
   // Mock data for demonstration
   useEffect(() => {
     setTimeout(() => {
-      const mockOrders = [
-        {
+      const mockOrders = [        {
           id: 'DH001',
           date: '2025-06-04T10:30:00Z',
           restaurantName: 'Nhà hàng Phố Huế',
           restaurantLogo: '🍜',
           totalAmount: 285000,
           status: 'completed',
-          statusText: 'Hoàn thành',
+          statusText: getStatusLabel('completed'),
           items: [
             { name: 'Bún bò Huế', quantity: 2, price: 65000 },
             { name: 'Chả cá Thăng Long', quantity: 1, price: 85000 },
@@ -32,7 +36,7 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
           restaurantLogo: '🍕',
           totalAmount: 450000,
           status: 'delivering',
-          statusText: 'Đang giao',
+          statusText: getStatusLabel('delivering'),
           items: [
             { name: 'Pizza Margherita size L', quantity: 1, price: 299000 },
             { name: 'Coca Cola', quantity: 2, price: 25000 },
@@ -46,7 +50,7 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
           restaurantLogo: '🍗',
           totalAmount: 195000,
           status: 'preparing',
-          statusText: 'Đang chuẩn bị',
+          statusText: getStatusLabel('preparing'),
           items: [
             { name: 'Gà rán phần', quantity: 1, price: 99000 },
             { name: 'Khoai tây chiên', quantity: 1, price: 35000 },
@@ -55,12 +59,53 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
         },
         {
           id: 'DH004',
+          date: '2025-06-04T16:30:00Z',
+          restaurantName: 'Bún chả Hà Nội',
+          restaurantLogo: '🍲',
+          totalAmount: 180000,
+          status: 'pending',
+          statusText: getStatusLabel('pending'),
+          items: [
+            { name: 'Bún chả đặc biệt', quantity: 1, price: 85000 },
+            { name: 'Nem cua bể', quantity: 1, price: 65000 },
+            { name: 'Trà đá', quantity: 1, price: 10000 }
+          ]
+        },
+        {
+          id: 'DH005',
+          date: '2025-06-04T11:20:00Z',
+          restaurantName: 'The Coffee House',
+          restaurantLogo: '☕',
+          totalAmount: 125000,
+          status: 'ready_for_pickup',
+          statusText: getStatusLabel('ready_for_pickup'),
+          items: [
+            { name: 'Cà phê sữa đá', quantity: 2, price: 45000 },
+            { name: 'Bánh mì', quantity: 1, price: 35000 }
+          ]
+        },
+        {
+          id: 'DH006',
+          date: '2025-06-03T15:45:00Z',
+          restaurantName: 'Gà rán Texas',
+          restaurantLogo: '🍗',
+          totalAmount: 320000,
+          status: 'delivery_failed',
+          statusText: getStatusLabel('delivery_failed'),
+          items: [
+            { name: 'Combo gà rán 8 miếng', quantity: 1, price: 259000 },
+            { name: 'Khoai tây lớn', quantity: 1, price: 45000 },
+            { name: 'Pepsi lon', quantity: 2, price: 16000 }
+          ]
+        },
+        {
+          id: 'DH007',
           date: '2025-06-02T12:20:00Z',
           restaurantName: 'Highlands Coffee',
           restaurantLogo: '☕',
           totalAmount: 125000,
           status: 'cancelled',
-          statusText: 'Đã hủy',
+          statusText: getStatusLabel('cancelled'),
           items: [
             { name: 'Cà phê sữa đá', quantity: 2, price: 45000 },
             { name: 'Bánh mì', quantity: 1, price: 35000 }
@@ -81,11 +126,11 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
       hour: '2-digit',
       minute: '2-digit'
     });
-  };
-
-  const filteredOrders = orders.filter(order => {
+  };  const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
-    if (filter === 'active') return ['pending', 'preparing', 'delivering'].includes(order.status);
+    if (filter === 'active') return isActiveStatus(order.status);
+    if (filter === 'completed') return isCompletedStatus(order.status);
+    if (filter === 'cancelled') return isCancelledStatus(order.status);
     return order.status === filter;
   });
 
@@ -143,16 +188,10 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Orders List */}
+        </div>        {/* Orders List */}
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
-          </div>
-        ) : error ? (
-          <div className="card" style={{ color: '#ef5350', textAlign: 'center' }}>
-            {error}
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="no-orders">
