@@ -6,116 +6,39 @@ import {
   isCompletedStatus,
   isCancelledStatus 
 } from '../utils/orderStatus';
+import { fetchOrders } from '../services/orderService';
 
 function OrderHistory({ user, onOrderClick, onBackToHome }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Mock data for demonstration
   useEffect(() => {
-    setTimeout(() => {
-      const mockOrders = [        {
-          id: 'DH001',
-          date: '2025-06-04T10:30:00Z',
-          restaurantName: 'Nhà hàng Phố Huế',
-          restaurantLogo: '🍜',
-          totalAmount: 285000,
-          status: 'completed',
-          statusText: getStatusLabel('completed'),
-          items: [
-            { name: 'Bún bò Huế', quantity: 2, price: 65000 },
-            { name: 'Chả cá Thăng Long', quantity: 1, price: 85000 },
-            { name: 'Trà đá', quantity: 2, price: 10000 }
-          ]
-        },
-        {
-          id: 'DH002',
-          date: '2025-06-04T14:15:00Z',
-          restaurantName: 'Pizza Hut',
-          restaurantLogo: '🍕',
-          totalAmount: 450000,
-          status: 'delivering',
-          statusText: getStatusLabel('delivering'),
-          items: [
-            { name: 'Pizza Margherita size L', quantity: 1, price: 299000 },
-            { name: 'Coca Cola', quantity: 2, price: 25000 },
-            { name: 'Chicken Wings', quantity: 1, price: 89000 }
-          ]
-        },
-        {
-          id: 'DH003',
-          date: '2025-06-03T19:45:00Z',
-          restaurantName: 'KFC Vietnam',
-          restaurantLogo: '🍗',
-          totalAmount: 195000,
-          status: 'preparing',
-          statusText: getStatusLabel('preparing'),
-          items: [
-            { name: 'Gà rán phần', quantity: 1, price: 99000 },
-            { name: 'Khoai tây chiên', quantity: 1, price: 35000 },
-            { name: 'Pepsi', quantity: 1, price: 20000 }
-          ]
-        },
-        {
-          id: 'DH004',
-          date: '2025-06-04T16:30:00Z',
-          restaurantName: 'Bún chả Hà Nội',
-          restaurantLogo: '🍲',
-          totalAmount: 180000,
-          status: 'pending',
-          statusText: getStatusLabel('pending'),
-          items: [
-            { name: 'Bún chả đặc biệt', quantity: 1, price: 85000 },
-            { name: 'Nem cua bể', quantity: 1, price: 65000 },
-            { name: 'Trà đá', quantity: 1, price: 10000 }
-          ]
-        },
-        {
-          id: 'DH005',
-          date: '2025-06-04T11:20:00Z',
-          restaurantName: 'The Coffee House',
-          restaurantLogo: '☕',
-          totalAmount: 125000,
-          status: 'ready_for_pickup',
-          statusText: getStatusLabel('ready_for_pickup'),
-          items: [
-            { name: 'Cà phê sữa đá', quantity: 2, price: 45000 },
-            { name: 'Bánh mì', quantity: 1, price: 35000 }
-          ]
-        },
-        {
-          id: 'DH006',
-          date: '2025-06-03T15:45:00Z',
-          restaurantName: 'Gà rán Texas',
-          restaurantLogo: '🍗',
-          totalAmount: 320000,
-          status: 'delivery_failed',
-          statusText: getStatusLabel('delivery_failed'),
-          items: [
-            { name: 'Combo gà rán 8 miếng', quantity: 1, price: 259000 },
-            { name: 'Khoai tây lớn', quantity: 1, price: 45000 },
-            { name: 'Pepsi lon', quantity: 2, price: 16000 }
-          ]
-        },
-        {
-          id: 'DH007',
-          date: '2025-06-02T12:20:00Z',
-          restaurantName: 'Highlands Coffee',
-          restaurantLogo: '☕',
-          totalAmount: 125000,
-          status: 'cancelled',
-          statusText: getStatusLabel('cancelled'),
-          items: [
-            { name: 'Cà phê sữa đá', quantity: 2, price: 45000 },
-            { name: 'Bánh mì', quantity: 1, price: 35000 }
-          ]
+    if (!user) return;
+    setLoading(true);
+    setError('');
+    fetchOrders({
+      token: user.token,
+      page,
+      status: filter
+    })
+      .then(res => {
+        if (res.success) {
+          setOrders(res.data.orders);
+          setTotalPages(res.data.pagination.totalPages);
+        } else {
+          setError(res.message || 'Lỗi khi tải đơn hàng');
         }
-      ];
-      setOrders(mockOrders);
-      setLoading(false);
-    }, 1000);
-  }, []);
+        setLoading(false);
+      })
+      .catch(e => {
+        setError(e.message || 'Lỗi khi tải đơn hàng');
+        setLoading(false);
+      });
+  }, [user, filter, page]);
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -126,13 +49,7 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
       hour: '2-digit',
       minute: '2-digit'
     });
-  };  const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return isActiveStatus(order.status);
-    if (filter === 'completed') return isCompletedStatus(order.status);
-    if (filter === 'cancelled') return isCancelledStatus(order.status);
-    return order.status === filter;
-  });
+  };  const filteredOrders = orders; // Đã lọc từ API
 
   if (!user) {
     return (
@@ -175,24 +92,28 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
           <div className="filter-tabs">
             {[
               { key: 'all', label: 'Tất cả' },
-              { key: 'active', label: 'Đang xử lý' },
+              { key: 'pending', label: 'Chờ xác nhận' },
+              { key: 'delivering', label: 'Đang giao' },
               { key: 'completed', label: 'Hoàn thành' },
               { key: 'cancelled', label: 'Đã hủy' }
             ].map(tab => (
               <button
                 key={tab.key}
-                onClick={() => setFilter(tab.key)}
+                onClick={() => { setFilter(tab.key); setPage(1); }}
                 className={`filter-tab ${filter === tab.key ? 'active' : ''}`}
               >
                 {tab.label}
               </button>
             ))}
           </div>
-        </div>        {/* Orders List */}
+        </div>
+        {/* Orders List */}
         {loading ? (
           <div className="loading-container">
             <div className="loading-spinner"></div>
           </div>
+        ) : error ? (
+          <div className="no-orders" style={{ color: '#ef5350' }}>{error}</div>
         ) : filteredOrders.length === 0 ? (
           <div className="no-orders">
             <div className="no-orders-icon">📦</div>
@@ -204,60 +125,68 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
             </div>
           </div>
         ) : (
-          <div className="orders-list">
-            {filteredOrders.map(order => (
-              <div
-                key={order.id}
-                className={`order-card status-${order.status}`}
-                onClick={() => onOrderClick && onOrderClick(order)}
-              >
-                <div className="order-card-header">
-                  <div className="restaurant-info">
-                    <div className="restaurant-logo">
-                      {order.restaurantLogo}
+          <>
+            <div className="orders-list">
+              {filteredOrders.map(order => (
+                <div
+                  key={order.id}
+                  className={`order-card status-${order.status}`}
+                  onClick={() => onOrderClick && onOrderClick(order)}
+                >
+                  <div className="order-card-header">
+                    <div className="restaurant-info">
+                      <div className="restaurant-logo">
+                        {order.restaurantLogo || '🍽️'}
+                      </div>
+                      <div>
+                        <h3 className="restaurant-name">{order.restaurantName || ''}</h3>
+                        <p className="order-date">#{order.id} • {formatDate(order.createdAt)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="restaurant-name">{order.restaurantName}</h3>
-                      <p className="order-date">#{order.id} • {formatDate(order.date)}</p>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className={`order-status status-${order.status}`}>
+                        {getStatusLabel(order.status)}
+                      </div>
+                      <div className="total-amount">
+                        {order.total.toLocaleString()}₫
+                      </div>
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
-                    <div className={`order-status status-${order.status}`}>
-                      {order.statusText}
-                    </div>
-                    <div className="total-amount">
-                      {order.totalAmount.toLocaleString()}₫
+                  <div className="order-items">
+                    <div className="order-item-summary">
+                      {order.items.slice(0, 3).map((item, index) => (
+                        <span key={index}>
+                          {item.foodName} x{item.quantity}
+                          {index < Math.min(2, order.items.length - 1) ? ', ' : ''}
+                        </span>
+                      ))}
+                      {order.items.length > 3 && (
+                        <span style={{ color: '#ff7043', fontWeight: '500' }}>
+                          {' '}và {order.items.length - 3} món khác
+                        </span>
+                      )}
                     </div>
                   </div>
-                </div>
-
-                <div className="order-items">
-                  <div className="order-item-summary">
-                    {order.items.slice(0, 3).map((item, index) => (
-                      <span key={index}>
-                        {item.name} x{item.quantity}
-                        {index < Math.min(2, order.items.length - 1) ? ', ' : ''}
-                      </span>
-                    ))}
-                    {order.items.length > 3 && (
-                      <span style={{ color: '#ff7043', fontWeight: '500' }}>
-                        {' '}và {order.items.length - 3} món khác
-                      </span>
-                    )}
+                  <div className="order-total">
+                    <span>
+                      {order.items.length} món • {order.items.reduce((sum, item) => sum + item.quantity, 0)} sản phẩm
+                    </span>
+                    <span style={{ color: '#ff7043', fontWeight: '500' }}>
+                      Xem chi tiết →
+                    </span>
                   </div>
                 </div>
-
-                <div className="order-total">
-                  <span>
-                    {order.items.length} món • {order.items.reduce((sum, item) => sum + item.quantity, 0)} sản phẩm
-                  </span>
-                  <span style={{ color: '#ff7043', fontWeight: '500' }}>
-                    Xem chi tiết →
-                  </span>
-                </div>
+              ))}
+            </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="pagination-bar">
+                <button disabled={page === 1} onClick={() => setPage(page - 1)}>←</button>
+                <span>Trang {page}/{totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage(page + 1)}>→</button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

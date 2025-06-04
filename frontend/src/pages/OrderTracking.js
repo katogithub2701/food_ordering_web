@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/OrderTracking.css';
+import { fetchOrderDetail } from '../services/orderService';
 
-function OrderTracking({ orderId, onBack }) {
+function OrderTracking({ orderId, onBack, user }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -10,111 +11,40 @@ function OrderTracking({ orderId, onBack }) {
   // Function to fetch order data
   const fetchOrderData = () => {
     setRefreshing(true);
-    // Simulate API call
-    setTimeout(() => {
-      const mockOrder = {
-        id: 'DH002',
-        date: '2025-06-04T14:15:00Z',
-        restaurantName: 'Pizza Hut',
-        restaurantLogo: '/api/placeholder/60/60',
-        restaurantAddress: '123 Đường Nguyễn Văn Linh, Quận 7, TP.HCM',
-        restaurantPhone: '0901234567',
-        totalAmount: 450000,
-        deliveryFee: 25000,
-        discount: 50000,
-        finalAmount: 425000,
-        status: 'delivering',
-        statusText: 'Đang giao',
-        estimatedDelivery: '2025-06-04T15:30:00Z',
-        deliveryAddress: '456 Đường Lê Văn Việt, Quận 9, TP.HCM',
-        recipientName: 'Nguyễn Văn A',
-        recipientPhone: '0987654321',
-        paymentMethod: 'Tiền mặt',
-        items: [
-          { 
-            id: 1,
-            name: 'Pizza Margherita size L', 
-            quantity: 1, 
-            price: 299000,
-            image: '/api/placeholder/80/80',
-            note: 'Không hành tây'
-          },
-          { 
-            id: 2,
-            name: 'Coca Cola', 
-            quantity: 2, 
-            price: 25000,
-            image: '/api/placeholder/80/80'
-          },
-          { 
-            id: 3,
-            name: 'Chicken Wings', 
-            quantity: 1, 
-            price: 89000,
-            image: '/api/placeholder/80/80',
-            note: 'Cay vừa'
-          }
-        ],
-        timeline: [
-          {
-            status: 'pending',
-            label: 'Chờ xác nhận',
-            time: '2025-06-04T14:15:00Z',
-            completed: true,
-            description: 'Đơn hàng đã được đặt thành công'
-          },
-          {
-            status: 'confirmed',
-            label: 'Đã xác nhận',
-            time: '2025-06-04T14:18:00Z',
-            completed: true,
-            description: 'Nhà hàng đã xác nhận đơn hàng'
-          },
-          {
-            status: 'preparing',
-            label: 'Đang chuẩn bị',
-            time: '2025-06-04T14:20:00Z',
-            completed: true,
-            description: 'Nhà hàng đang chuẩn bị món ăn'
-          },
-          {
-            status: 'ready',
-            label: 'Sẵn sàng giao',
-            time: '2025-06-04T14:50:00Z',
-            completed: true,
-            description: 'Món ăn đã sẵn sàng, shipper đang đến nhận'
-          },
-          {
-            status: 'delivering',
-            label: 'Đang giao',
-            time: '2025-06-04T15:00:00Z',
-            completed: true,
-            description: 'Shipper đang trên đường giao đến bạn',
-            current: true
-          },
-          {
-            status: 'completed',
-            label: 'Hoàn thành',
-            time: null,
-            completed: false,
-            description: 'Đơn hàng đã được giao thành công'
-          }
-        ],
-        driver: {
-          name: 'Trần Văn B',
-          phone: '0912345678',
-          rating: 4.8,
-          vehicle: 'Honda Wave - 29B1-12345'
+    setError('');
+    fetchOrderDetail(orderId, user.token)
+      .then(res => {
+        if (res.success) {
+          // Chuyển đổi dữ liệu API sang format UI
+          const o = res.data;
+          setOrder({
+            ...o,
+            statusText: o.status && (window.getStatusLabel ? window.getStatusLabel(o.status) : o.status),
+            timeline: o.statusHistory?.map(h => ({
+              status: h.toStatus,
+              label: window.getStatusLabel ? window.getStatusLabel(h.toStatus) : h.toStatus,
+              time: h.changedAt,
+              completed: true,
+              description: h.note || '',
+              current: false
+            })) || []
+          });
+        } else {
+          setError(res.message || 'Lỗi khi tải chi tiết đơn hàng');
         }
-      };
-      setOrder(mockOrder);
-      setLoading(false);
-      setRefreshing(false);
-    }, 1000);
+        setLoading(false);
+        setRefreshing(false);
+      })
+      .catch(e => {
+        setError(e.message || 'Lỗi khi tải chi tiết đơn hàng');
+        setLoading(false);
+        setRefreshing(false);
+      });
   };
 
   useEffect(() => {
     fetchOrderData();
+    // eslint-disable-next-line
   }, [orderId]);
 
   const formatTime = (timeString) => {
