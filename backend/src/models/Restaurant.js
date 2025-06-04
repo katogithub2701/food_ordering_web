@@ -5,6 +5,11 @@ const Restaurant = sequelize.define('Restaurant', {
   name: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  avgRating: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    defaultValue: null
   }
 });
 

@@ -10,6 +10,7 @@ const { Order, OrderItem } = require('./models/Order');
 const OrderStatusHistory = require('./models/OrderStatusHistory');
 const orderStatusRoutes = require('./api/orderStatusRoutes');
 const orderRoutes = require('./api/orderRoutes');
+const reviewRoutes = require('./api/reviewRoutes');
 const { generateToken } = require('./middleware/auth');
 
 const app = express();
@@ -118,6 +119,7 @@ app.get('/api/user-orders', async (req, res) => {
 app.use('/api/orders', orderRoutes);
 // Order status routes sử dụng sub-routes của orders
 app.use('/api/orders', orderStatusRoutes);
+app.use('/api', reviewRoutes);
 
 console.log('Backend server starting...');
 

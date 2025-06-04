@@ -43,7 +43,7 @@ async function createSampleOrders() {
     {
       userId: 1,
       restaurantId: 1,
-      totalAmount: 285000,
+      total: 285000,
       status: ORDER_STATUS.COMPLETED,
       deliveryAddress: '123 Đường ABC, Quận 1, TP.HCM',
       notes: 'Giao hàng nhanh nhé'
@@ -51,7 +51,7 @@ async function createSampleOrders() {
     {
       userId: 1,
       restaurantId: 2,
-      totalAmount: 450000,
+      total: 450000,
       status: ORDER_STATUS.DELIVERING,
       deliveryAddress: '456 Đường XYZ, Quận 3, TP.HCM',
       notes: 'Tầng 3, chuông cửa bên trái'
@@ -59,7 +59,7 @@ async function createSampleOrders() {
     {
       userId: 1,
       restaurantId: 3,
-      totalAmount: 195000,
+      total: 195000,
       status: ORDER_STATUS.PREPARING,
       deliveryAddress: '789 Đường DEF, Quận 5, TP.HCM',
       notes: 'Không cay'
