@@ -22,6 +22,20 @@ const Food = sequelize.define('Food', {
   imageUrl: {
     type: DataTypes.STRING,
     allowNull: true
+  },
+  restaurantId: {
+    type: DataTypes.INTEGER,
+    allowNull: true
+  },
+  category: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    defaultValue: 'Món chính'
+  },
+  isAvailable: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: true
   }
 });
 
