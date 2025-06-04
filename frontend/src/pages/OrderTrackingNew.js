@@ -1,0 +1,441 @@
+import React, { useState, useEffect } from 'react';
+import '../styles/OrderTracking.css';
+
+function OrderTracking({ orderId, onBack }) {
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Function to fetch order data
+  const fetchOrderData = () => {
+    setRefreshing(true);
+    // Simulate API call
+    setTimeout(() => {
+      const mockOrder = {
+        id: 'DH002',
+        date: '2025-06-04T14:15:00Z',
+        restaurantName: 'Pizza Hut',
+        restaurantLogo: '🍕',
+        restaurantAddress: '123 Đường Nguyễn Văn Linh, Quận 7, TP.HCM',
+        restaurantPhone: '0901234567',
+        totalAmount: 450000,
+        deliveryFee: 25000,
+        discount: 50000,
+        finalAmount: 425000,
+        status: 'delivering',
+        statusText: 'Đang giao',
+        estimatedDelivery: '2025-06-04T15:30:00Z',
+        deliveryAddress: '456 Đường Lê Văn Việt, Quận 9, TP.HCM',
+        recipientName: 'Nguyễn Văn A',
+        recipientPhone: '0987654321',
+        paymentMethod: 'Tiền mặt',
+        items: [
+          { 
+            id: 1,
+            name: 'Pizza Margherita size L', 
+            quantity: 1, 
+            price: 299000,
+            image: '/api/placeholder/80/80',
+            note: 'Không hành tây'
+          },
+          { 
+            id: 2,
+            name: 'Coca Cola', 
+            quantity: 2, 
+            price: 25000,
+            image: '/api/placeholder/80/80'
+          },
+          { 
+            id: 3,
+            name: 'Chicken Wings', 
+            quantity: 1, 
+            price: 89000,
+            image: '/api/placeholder/80/80',
+            note: 'Cay vừa'
+          }
+        ],
+        timeline: [
+          {
+            status: 'pending',
+            label: 'Chờ xác nhận',
+            time: '2025-06-04T14:15:00Z',
+            completed: true,
+            description: 'Đơn hàng đã được đặt thành công'
+          },
+          {
+            status: 'confirmed',
+            label: 'Đã xác nhận',
+            time: '2025-06-04T14:18:00Z',
+            completed: true,
+            description: 'Nhà hàng đã xác nhận đơn hàng'
+          },
+          {
+            status: 'preparing',
+            label: 'Đang chuẩn bị',
+            time: '2025-06-04T14:20:00Z',
+            completed: true,
+            description: 'Nhà hàng đang chuẩn bị món ăn'
+          },
+          {
+            status: 'ready',
+            label: 'Sẵn sàng giao',
+            time: '2025-06-04T14:50:00Z',
+            completed: true,
+            description: 'Món ăn đã sẵn sàng, shipper đang đến nhận'
+          },
+          {
+            status: 'delivering',
+            label: 'Đang giao',
+            time: '2025-06-04T15:00:00Z',
+            completed: true,
+            description: 'Shipper đang trên đường giao đến bạn',
+            current: true
+          },
+          {
+            status: 'completed',
+            label: 'Hoàn thành',
+            time: null,
+            completed: false,
+            description: 'Đơn hàng đã được giao thành công'
+          }
+        ],
+        driver: {
+          name: 'Trần Văn B',
+          phone: '0912345678',
+          rating: 4.8,
+          vehicle: 'Honda Wave - 29B1-12345'
+        }
+      };
+      setOrder(mockOrder);
+      setLoading(false);
+      setRefreshing(false);
+    }, refreshing ? 1500 : 1000);
+  };
+
+  useEffect(() => {
+    fetchOrderData();
+  }, [orderId]);
+
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    const date = new Date(timeString);
+    return date.toLocaleTimeString('vi-VN', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const formatDate = (timeString) => {
+    const date = new Date(timeString);
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  };
+
+  const getEstimatedDeliveryTime = (estimatedTime) => {
+    if (!estimatedTime) return '';
+    const now = new Date();
+    const estimated = new Date(estimatedTime);
+    const diffMinutes = Math.max(0, Math.ceil((estimated - now) / (1000 * 60)));
+    
+    if (diffMinutes <= 0) return 'Sắp đến';
+    if (diffMinutes < 60) return `Còn khoảng ${diffMinutes} phút`;
+    const hours = Math.floor(diffMinutes / 60);
+    const minutes = diffMinutes % 60;
+    return `Còn khoảng ${hours}h${minutes > 0 ? ` ${minutes}p` : ''}`;
+  };
+
+  if (loading) {
+    return (
+      <div className="order-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <div style={{ marginTop: '1rem', color: '#666' }}>Đang tải thông tin đơn hàng...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !order) {
+    return (
+      <div className="order-container">
+        <div className="loading-container">
+          <div style={{ textAlign: 'center', color: '#ef5350' }}>
+            {error || 'Không tìm thấy đơn hàng'}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="order-container">
+      {/* Header */}
+      <header className="order-header">
+        <div className="order-header-content">
+          <button onClick={onBack} className="back-button">
+            ←
+          </button>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ margin: 0, fontSize: '1.8rem' }}>Chi tiết đơn hàng</h1>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '1rem', opacity: '0.9' }}>
+              Mã đơn: {order.id}
+            </p>
+          </div>
+          <button 
+            onClick={fetchOrderData}
+            disabled={refreshing}
+            className={`back-button ${refreshing ? 'refreshing' : ''}`}
+            style={{
+              opacity: refreshing ? 0.6 : 1,
+              cursor: refreshing ? 'not-allowed' : 'pointer',
+              animation: refreshing ? 'spin 1s linear infinite' : 'none'
+            }}
+            title="Làm mới trạng thái"
+          >
+            ↻
+          </button>
+        </div>
+      </header>
+
+      <div className="content-wrapper">
+        {/* Delivery Status Card */}
+        <div className="card status-card">
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>
+              {order.status === 'delivering' ? '🚚' : 
+               order.status === 'completed' ? '✅' : 
+               order.status === 'preparing' ? '👨‍🍳' : '📝'}
+            </div>
+            <h2 style={{ 
+              margin: 0, 
+              color: '#ff7043', 
+              fontSize: '1.5rem',
+              marginBottom: '0.5rem'
+            }}>
+              {order.statusText}
+            </h2>
+            {order.status === 'delivering' && (
+              <div className="estimation-badge">
+                {getEstimatedDeliveryTime(order.estimatedDelivery)}
+              </div>
+            )}
+          </div>
+
+          {/* Driver Info (if delivering) */}
+          {order.status === 'delivering' && order.driver && (
+            <div className="driver-card">
+              <h4 style={{ margin: '0 0 0.75rem', color: '#333' }}>Thông tin tài xế</h4>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontWeight: '600', marginBottom: '0.25rem' }}>{order.driver.name}</div>
+                  <div style={{ color: '#666', fontSize: '0.9rem' }}>{order.driver.vehicle}</div>
+                  <div style={{ color: '#666', fontSize: '0.9rem' }}>⭐ {order.driver.rating}/5</div>
+                </div>
+                <a 
+                  href={`tel:${order.driver.phone}`}
+                  className="call-button"
+                >
+                  📞 Gọi tài xế
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Timeline */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1.5rem', color: '#333', fontSize: '1.3rem' }}>
+            Tiến trình đơn hàng
+          </h3>
+          
+          <div className="timeline-container">
+            {order.timeline.map((step, index) => (
+              <div key={step.status} className="timeline-item">
+                {/* Timeline Line */}
+                {index < order.timeline.length - 1 && (
+                  <div className={`timeline-line ${step.completed ? 'completed' : 'pending'}`} />
+                )}
+                
+                {/* Timeline Dot */}
+                <div className={`timeline-dot ${
+                  step.completed ? 'completed' : 
+                  step.current ? 'current' : 'pending'
+                }`}>
+                  {step.completed ? '✓' : step.current ? '●' : index + 1}
+                </div>
+                
+                {/* Timeline Content */}
+                <div style={{ flex: 1 }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '0.25rem'
+                  }}>
+                    <h4 style={{ 
+                      margin: 0, 
+                      color: step.completed || step.current ? '#333' : '#999',
+                      fontSize: '1rem',
+                      fontWeight: '600'
+                    }}>
+                      {step.label}
+                    </h4>
+                    {step.time && (
+                      <span style={{ 
+                        color: '#666', 
+                        fontSize: '0.9rem',
+                        fontWeight: '500'
+                      }}>
+                        {formatTime(step.time)}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ 
+                    margin: 0, 
+                    color: step.completed || step.current ? '#666' : '#999',
+                    fontSize: '0.9rem'
+                  }}>
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Restaurant Info */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1rem', color: '#333', fontSize: '1.3rem' }}>
+            Thông tin nhà hàng
+          </h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className="restaurant-avatar">
+              {order.restaurantLogo}
+            </div>
+            <div style={{ flex: 1 }}>
+              <h4 style={{ margin: '0 0 0.25rem', fontSize: '1.1rem' }}>{order.restaurantName}</h4>
+              <p style={{ margin: '0 0 0.25rem', color: '#666', fontSize: '0.9rem' }}>
+                📍 {order.restaurantAddress}
+              </p>
+              <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
+                📞 {order.restaurantPhone}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Order Items */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1.5rem', color: '#333', fontSize: '1.3rem' }}>
+            Chi tiết đơn hàng
+          </h3>
+          
+          {order.items.map(item => (
+            <div key={item.id} className="order-item">
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '8px',
+                background: '#f5f5f5',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.5rem'
+              }}>
+                🍽️
+              </div>
+              <div style={{ flex: 1 }}>
+                <h4 style={{ margin: '0 0 0.25rem', fontSize: '1rem' }}>{item.name}</h4>
+                <p style={{ margin: '0 0 0.25rem', color: '#666', fontSize: '0.9rem' }}>
+                  Số lượng: {item.quantity}
+                </p>
+                {item.note && (
+                  <p style={{ margin: 0, color: '#ff7043', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                    Ghi chú: {item.note}
+                  </p>
+                )}
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: '600', color: '#ff7043' }}>
+                  {(item.price * item.quantity).toLocaleString()}₫
+                </div>
+                <div style={{ color: '#666', fontSize: '0.8rem' }}>
+                  {item.price.toLocaleString()}₫ × {item.quantity}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Delivery Info */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1rem', color: '#333', fontSize: '1.3rem' }}>
+            Thông tin giao hàng
+          </h3>
+          <div style={{ marginBottom: '1rem' }}>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#333' }}>Địa chỉ giao hàng</h4>
+            <p style={{ margin: '0 0 0.25rem', fontWeight: '600' }}>{order.recipientName}</p>
+            <p style={{ margin: '0 0 0.25rem', color: '#666' }}>{order.deliveryAddress}</p>
+            <p style={{ margin: 0, color: '#666' }}>📞 {order.recipientPhone}</p>
+          </div>
+          <div>
+            <h4 style={{ margin: '0 0 0.5rem', color: '#333' }}>Phương thức thanh toán</h4>
+            <p style={{ margin: 0, color: '#666' }}>{order.paymentMethod}</p>
+          </div>
+        </div>
+
+        {/* Order Summary */}
+        <div className="card">
+          <h3 style={{ margin: '0 0 1rem', color: '#333', fontSize: '1.3rem' }}>
+            Tổng kết đơn hàng
+          </h3>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ color: '#666' }}>Tạm tính</span>
+            <span>{order.totalAmount.toLocaleString()}₫</span>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+            <span style={{ color: '#666' }}>Phí giao hàng</span>
+            <span>{order.deliveryFee.toLocaleString()}₫</span>
+          </div>
+          
+          {order.discount > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+              <span style={{ color: '#66bb6a' }}>Giảm giá</span>
+              <span style={{ color: '#66bb6a' }}>-{order.discount.toLocaleString()}₫</span>
+            </div>
+          )}
+          
+          <hr style={{ border: 'none', borderTop: '1px solid #f0f0f0', margin: '1rem 0' }} />
+          
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            fontSize: '1.2rem',
+            fontWeight: '600',
+            color: '#ff7043'
+          }}>
+            <span>Tổng cộng</span>
+            <span>{order.finalAmount.toLocaleString()}₫</span>
+          </div>
+          
+          <div style={{ 
+            textAlign: 'center',
+            marginTop: '1rem',
+            color: '#666',
+            fontSize: '0.9rem'
+          }}>
+            Đặt lúc: {formatDate(order.date)} {formatTime(order.date)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default OrderTracking;
