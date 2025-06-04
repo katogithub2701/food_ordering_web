@@ -9,6 +9,8 @@ const Food = require('./models/Food');
 const { Order, OrderItem } = require('./models/Order');
 const OrderStatusHistory = require('./models/OrderStatusHistory');
 const orderStatusRoutes = require('./api/orderStatusRoutes');
+const orderRoutes = require('./api/orderRoutes');
+const { generateToken } = require('./middleware/auth');
 
 const app = express();
 app.use(cors());
@@ -42,7 +44,19 @@ app.post('/api/login', async (req, res) => {
     const bcrypt = require('bcryptjs');
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Sai tên đăng nhập hoặc mật khẩu.' });
-    res.json({ message: 'Đăng nhập thành công!', user: { username: user.username, email: user.email } });
+    
+    // Generate JWT token
+    const token = generateToken(user.id);
+    
+    res.json({ 
+      message: 'Đăng nhập thành công!', 
+      user: { 
+        id: user.id,
+        username: user.username, 
+        email: user.email 
+      },
+      token
+    });
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server.' });
   }
@@ -100,7 +114,9 @@ app.get('/api/user-orders', async (req, res) => {
   }
 });
 
-// Sử dụng order status routes
+// Sử dụng order routes
+app.use('/api/orders', orderRoutes);
+// Order status routes sử dụng sub-routes của orders
 app.use('/api/orders', orderStatusRoutes);
 
 console.log('Backend server starting...');
