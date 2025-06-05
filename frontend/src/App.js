@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { CartProvider } from './contexts/CartContext';
 import HomePage from './pages/HomePage';
-import AuthPage from './pages/AuthPage';
 import CheckoutPage from './pages/CheckoutPage';
 import PaymentResultPage from './pages/PaymentResultPage';
 import PaymentMethodPage from './pages/PaymentMethodPage';
+import RestaurantPortal from './pages/RestaurantPortal';
 import CartSidebar from './components/CartSidebar';
 import Toast from './components/Toast';
 
@@ -26,11 +26,12 @@ function App() {
     setUser(null);
     localStorage.removeItem('user');
   };
-
   return (
     <CartProvider user={user}>
       {window.location.pathname.startsWith('/payment-result') ? (
         <PaymentResultPage />
+      ) : user && user.role === 'restaurant' ? (
+        <RestaurantPortal user={user} handleLogout={handleLogout} />
       ) : showPayment && lastOrderId ? (
         <PaymentMethodPage orderId={lastOrderId} onBack={() => { setShowPayment(false); setShowCheckout(true); }} onPaymentSuccess={() => { setShowPayment(false); setShowCheckout(false); setLastOrderId(null); }} />
       ) : showCheckout ? (

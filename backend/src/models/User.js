@@ -20,6 +20,19 @@ const User = sequelize.define('User', {
   password: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  role: {
+    type: DataTypes.ENUM('customer', 'restaurant'),
+    allowNull: false,
+    defaultValue: 'customer'
+  },
+  restaurantId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: 'Restaurants',
+      key: 'id'
+    }
   }
 });
 

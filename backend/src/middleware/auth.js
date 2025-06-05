@@ -25,13 +25,13 @@ const authenticateToken = async (req, res, next) => {  try {
         error: 'USER_NOT_FOUND',
         message: 'User not found' 
       });
-    }
-
-    // Attach user info to request
+    }    // Attach user info to request
     req.user = {
       id: user.id,
       username: user.username,
-      email: user.email
+      email: user.email,
+      role: user.role,
+      restaurantId: user.restaurantId
     };
     next();
   } catch (error) {
