@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
+const initialFoodState = { name: '', description: '', price: '', category: '', imageUrl: '', isAvailable: true };
+
 function RestaurantPortal({ user, handleLogout }) {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [orders, setOrders] = useState([]);
@@ -7,20 +9,25 @@ function RestaurantPortal({ user, handleLogout }) {
   const [dashboardStats, setDashboardStats] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [showFoodModal, setShowFoodModal] = useState(false);
+  const [editingFood, setEditingFood] = useState(null);
+  const [foodForm, setFoodForm] = useState(initialFoodState);
+  const [foodLoading, setFoodLoading] = useState(false);
 
   // Fetch dashboard data
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      
+
       // Fetch dashboard stats
       const dashboardRes = await fetch('http://localhost:5000/api/restaurant-portal/dashboard', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (dashboardRes.ok) {
         const dashboardData = await dashboardRes.json();
-        setDashboardStats(dashboardData);
+        // Some APIs return { success, data }, so unwrap if needed
+        setDashboardStats(dashboardData.data || dashboardData);
       }
 
       // Fetch orders
@@ -29,7 +36,9 @@ function RestaurantPortal({ user, handleLogout }) {
       });
       if (ordersRes.ok) {
         const ordersData = await ordersRes.json();
-        setOrders(ordersData);
+        // Defensive: support both { data: { orders } } and { orders }
+        const orders = ordersData.data?.orders || ordersData.orders || [];
+        setOrders(orders);
       }
 
       // Fetch foods
@@ -38,7 +47,8 @@ function RestaurantPortal({ user, handleLogout }) {
       });
       if (foodsRes.ok) {
         const foodsData = await foodsRes.json();
-        setFoods(foodsData);
+        const foods = foodsData.data?.foods || foodsData.foods || [];
+        setFoods(foods);
       }
     } catch (err) {
       setError('Lỗi khi tải dữ liệu');
@@ -70,6 +80,69 @@ function RestaurantPortal({ user, handleLogout }) {
       }
     } catch (err) {
       alert('Lỗi: ' + err.message);
+    }
+  };
+
+  // Food CRUD handlers
+  const handleOpenAddFood = () => {
+    setEditingFood(null);
+    setFoodForm(initialFoodState);
+    setShowFoodModal(true);
+  };
+  const handleOpenEditFood = (food) => {
+    setEditingFood(food);
+    setFoodForm({ ...food });
+    setShowFoodModal(true);
+  };
+  const handleCloseFoodModal = () => {
+    setShowFoodModal(false);
+    setEditingFood(null);
+    setFoodForm(initialFoodState);
+  };
+  const handleFoodFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFoodForm(f => ({ ...f, [name]: type === 'checkbox' ? checked : value }));
+  };
+  const handleSaveFood = async () => {
+    setFoodLoading(true);
+    const token = localStorage.getItem('token');
+    const method = editingFood ? 'PUT' : 'POST';
+    const url = editingFood
+      ? `http://localhost:5000/api/restaurant-portal/foods/${editingFood.id}`
+      : 'http://localhost:5000/api/restaurant-portal/foods';
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(foodForm)
+      });
+      if (!res.ok) throw new Error('Lỗi khi lưu món ăn');
+      handleCloseFoodModal();
+      fetchDashboardData();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setFoodLoading(false);
+    }
+  };
+  const handleDeleteFood = async (foodId) => {
+    if (!window.confirm('Bạn có chắc muốn xóa món này?')) return;
+    setFoodLoading(true);
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:5000/api/restaurant-portal/foods/${foodId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Lỗi khi xóa món ăn');
+      fetchDashboardData();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setFoodLoading(false);
     }
   };
 
@@ -365,7 +438,7 @@ function RestaurantPortal({ user, handleLogout }) {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
               <h2 style={{ color: '#333', margin: 0 }}>🍽️ Quản lý thực đơn</h2>
               <button
-                onClick={() => setActiveTab('add-food')}
+                onClick={handleOpenAddFood}
                 style={{
                   background: '#22c55e',
                   color: '#fff',
@@ -439,31 +512,13 @@ function RestaurantPortal({ user, handleLogout }) {
                         </div>
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <button
-                            style={{
-                              background: '#3b82f6',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '0.5rem',
-                              cursor: 'pointer',
-                              fontSize: '14px'
-                            }}
-                          >
-                            ✏️
-                          </button>
+                            onClick={() => handleOpenEditFood(food)}
+                            style={{ background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem', cursor: 'pointer', fontSize: '14px' }}
+                          >✏️</button>
                           <button
-                            style={{
-                              background: '#ef4444',
-                              color: '#fff',
-                              border: 'none',
-                              borderRadius: '6px',
-                              padding: '0.5rem',
-                              cursor: 'pointer',
-                              fontSize: '14px'
-                            }}
-                          >
-                            🗑️
-                          </button>
+                            onClick={() => handleDeleteFood(food.id)}
+                            style={{ background: '#ef4444', color: '#fff', border: 'none', borderRadius: '6px', padding: '0.5rem', cursor: 'pointer', fontSize: '14px' }}
+                          >🗑️</button>
                         </div>
                       </div>
                     </div>
@@ -474,6 +529,29 @@ function RestaurantPortal({ user, handleLogout }) {
           </div>
         )}
       </div>
+
+      {/* Add/Edit Food Modal */}
+      {showFoodModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 32, minWidth: 350, maxWidth: 400, boxShadow: '0 4px 24px #0002', position: 'relative' }}>
+            <h2 style={{ marginTop: 0 }}>{editingFood ? 'Chỉnh sửa món ăn' : 'Thêm món mới'}</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <input name="name" value={foodForm.name} onChange={handleFoodFormChange} placeholder="Tên món" style={{ padding: 8, borderRadius: 6, border: '1px solid #eee' }} />
+              <textarea name="description" value={foodForm.description} onChange={handleFoodFormChange} placeholder="Mô tả" style={{ padding: 8, borderRadius: 6, border: '1px solid #eee' }} />
+              <input name="price" type="number" value={foodForm.price} onChange={handleFoodFormChange} placeholder="Giá" style={{ padding: 8, borderRadius: 6, border: '1px solid #eee' }} />
+              <input name="category" value={foodForm.category} onChange={handleFoodFormChange} placeholder="Phân loại" style={{ padding: 8, borderRadius: 6, border: '1px solid #eee' }} />
+              <input name="imageUrl" value={foodForm.imageUrl} onChange={handleFoodFormChange} placeholder="Ảnh (URL)" style={{ padding: 8, borderRadius: 6, border: '1px solid #eee' }} />
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input name="isAvailable" type="checkbox" checked={foodForm.isAvailable} onChange={handleFoodFormChange} /> Có sẵn
+              </label>
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 24, justifyContent: 'flex-end' }}>
+              <button onClick={handleCloseFoodModal} style={{ padding: '0.5rem 1.2rem', borderRadius: 6, border: 'none', background: '#eee', color: '#333', fontWeight: 600 }}>Hủy</button>
+              <button onClick={handleSaveFood} disabled={foodLoading} style={{ padding: '0.5rem 1.2rem', borderRadius: 6, border: 'none', background: '#22c55e', color: '#fff', fontWeight: 600 }}>{foodLoading ? 'Đang lưu...' : 'Lưu'}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

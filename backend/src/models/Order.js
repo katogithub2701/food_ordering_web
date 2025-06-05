@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
-const Food = require('./Food');
 
 const Order = sequelize.define('Order', {
   // Mỗi đơn hàng thuộc về 1 user
@@ -89,9 +87,6 @@ const OrderItem = sequelize.define('OrderItem', {
   }
 });
 
-Order.belongsTo(User, { foreignKey: 'userId' });
-Order.hasMany(OrderItem, { foreignKey: 'orderId' });
-OrderItem.belongsTo(Order, { foreignKey: 'orderId' });
-OrderItem.belongsTo(Food, { foreignKey: 'foodId' });
+// Remove all associations from this file. Associations will be defined in models/index.js
 
 module.exports = { Order, OrderItem };

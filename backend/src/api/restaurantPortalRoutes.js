@@ -1,10 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { authenticateToken } = require('../middleware/auth');
-const { Order, OrderItem } = require('../models/Order');
-const Food = require('../models/Food');
-const User = require('../models/User');
-const Restaurant = require('../models/Restaurant');
+const { Order, OrderItem, Food, User, Restaurant } = require('../models');
 const OrderStatusHistory = require('../models/OrderStatusHistory');
 const { Op } = require('sequelize');
 
@@ -73,6 +70,7 @@ router.get('/orders', authenticateToken, requireRestaurantRole, async (req, res)
       where: whereConditions,
       include: [{
         model: OrderItem,
+        as: 'OrderItems',
         include: [{
           model: Food,
           where: { restaurantId: restaurantId },
@@ -180,6 +178,7 @@ router.put('/orders/:orderId/status', authenticateToken, requireRestaurantRole, 
       where: { id: orderId },
       include: [{
         model: OrderItem,
+        as: 'OrderItems',
         include: [{
           model: Food,
           where: { restaurantId: restaurantId },
@@ -498,6 +497,7 @@ router.get('/dashboard', authenticateToken, requireRestaurantRole, async (req, r
       Order.count({
         include: [{
           model: OrderItem,
+          as: 'OrderItems',
           include: [{
             model: Food,
             where: { restaurantId: restaurantId },
@@ -519,6 +519,7 @@ router.get('/dashboard', authenticateToken, requireRestaurantRole, async (req, r
       Order.count({
         include: [{
           model: OrderItem,
+          as: 'OrderItems',
           include: [{
             model: Food,
             where: { restaurantId: restaurantId },
@@ -538,6 +539,7 @@ router.get('/dashboard', authenticateToken, requireRestaurantRole, async (req, r
       Order.sum('total', {
         include: [{
           model: OrderItem,
+          as: 'OrderItems',
           include: [{
             model: Food,
             where: { restaurantId: restaurantId },
