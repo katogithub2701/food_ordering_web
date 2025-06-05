@@ -1,10 +1,50 @@
 import React, { useState, useEffect } from 'react';
+import { useCart } from '../contexts/CartContext';
 
-function RestaurantDetailPage({ restaurantId, onBack }) {
+function RestaurantDetailPage({ restaurantId, onBack, user }) {
   const [restaurant, setRestaurant] = useState(null);
   const [foods, setFoods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [selectedFood, setSelectedFood] = useState(null);
+  const { addItem } = useCart();
+
+  // Function to add item to cart
+  const handleAddToCart = async (foodId) => {
+    if (!user) {
+      alert('Vui lòng đăng nhập để thêm món vào giỏ hàng.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: user.username,
+          foodId: foodId,
+          quantity: 1
+        })
+      });
+
+      if (response.ok) {
+        const food = foods.find(f => f.id === foodId);
+        addItem({
+          id: foodId,
+          name: food.name,
+          price: food.price,
+          imageUrl: food.imageUrl,
+          restaurantName: restaurant.name
+        });
+        alert('Đã thêm món vào giỏ hàng!');
+      } else {
+        alert('Không thể thêm món vào giỏ hàng.');
+      }
+    } catch (err) {
+      console.error('Add to cart error:', err);
+      alert('Lỗi khi thêm vào giỏ hàng.');
+    }
+  };
 
   useEffect(() => {
     const fetchRestaurantDetail = async () => {
@@ -278,8 +318,8 @@ function RestaurantDetailPage({ restaurantId, onBack }) {
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.borderColor = '#f0f0f0';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}>
+                  e.currentTarget.style.transform = 'translateY(0)';                }}
+                onClick={() => setSelectedFood(food)}>
                   {food.imageUrl && (
                     <img 
                       src={food.imageUrl} 
@@ -338,9 +378,12 @@ function RestaurantDetailPage({ restaurantId, onBack }) {
                         fontWeight: '700'
                       }}>
                         {food.price.toLocaleString()}₫
-                      </div>
-                      
-                      <button style={{
+                      </div>                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(food.id);
+                        }}
+                        style={{
                         background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
                         color: '#fff',
                         border: 'none',
@@ -364,9 +407,178 @@ function RestaurantDetailPage({ restaurantId, onBack }) {
                 </div>
               ))}
             </div>
-          )}
-        </div>
+          )}        </div>
       </div>
+
+      {/* Food Detail Modal */}
+      {selectedFood && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.7)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}
+        onClick={() => setSelectedFood(null)}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '20px',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}
+          onClick={(e) => e.stopPropagation()}>
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedFood(null)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'rgba(0,0,0,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                fontSize: '20px',
+                zIndex: 1001
+              }}
+            >
+              ×
+            </button>
+
+            {/* Food image */}
+            {selectedFood.imageUrl && (
+              <img 
+                src={selectedFood.imageUrl} 
+                alt={selectedFood.name}
+                style={{ 
+                  width: '100%', 
+                  height: '300px', 
+                  objectFit: 'cover',
+                  borderRadius: '20px 20px 0 0'
+                }}
+              />
+            )}
+
+            {/* Food details */}
+            <div style={{ padding: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '1rem'
+              }}>
+                <h2 style={{
+                  margin: 0,
+                  color: '#333',
+                  fontSize: '2rem',
+                  fontWeight: '700'
+                }}>
+                  {selectedFood.name}
+                </h2>
+                
+                <div style={{
+                  background: '#ffeaa7',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600'
+                }}>
+                  ⭐ {selectedFood.rating}/5
+                </div>
+              </div>
+
+              <div style={{
+                background: '#f8f9fa',
+                padding: '1rem',
+                borderRadius: '12px',
+                marginBottom: '1.5rem'
+              }}>
+                <h3 style={{ color: '#ff7043', margin: '0 0 0.5rem 0' }}>Mô tả món ăn:</h3>
+                <p style={{
+                  color: '#666',
+                  margin: 0,
+                  lineHeight: '1.6',
+                  fontSize: '16px'
+                }}>
+                  {selectedFood.description}
+                </p>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '2rem'
+              }}>
+                <div>
+                  <div style={{ color: '#666', fontSize: '14px', marginBottom: '0.5rem' }}>Giá:</div>
+                  <div style={{
+                    color: '#ff7043',
+                    fontSize: '2rem',
+                    fontWeight: '700'
+                  }}>
+                    {selectedFood.price.toLocaleString()}₫
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ color: '#666', fontSize: '14px', marginBottom: '0.5rem' }}>Nhà hàng:</div>
+                  <div style={{
+                    color: '#333',
+                    fontSize: '16px',
+                    fontWeight: '600'
+                  }}>
+                    🏪 {restaurant.name}
+                  </div>
+                </div>
+              </div>
+
+              {user && (
+                <button
+                  onClick={() => {
+                    handleAddToCart(selectedFood.id);
+                    setSelectedFood(null);
+                  }}
+                  style={{
+                    width: '100%',
+                    background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '1rem 2rem',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.transform = 'scale(1.02)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                  }}
+                >
+                  🛒 Thêm vào giỏ hàng
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

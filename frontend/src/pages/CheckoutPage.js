@@ -11,28 +11,70 @@ const steps = [
 ];
 
 const Stepper = ({ step }) => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '24px 0 32px 0' }}>
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    margin: '2rem 0 3rem 0',
+    padding: '2rem',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: '20px',
+    color: '#fff'
+  }}>
     {steps.map((label, idx) => (
       <React.Fragment key={label}>
         <div style={{
-          minWidth: 36,
-          minHeight: 36,
-          borderRadius: '50%',
-          background: step === idx ? '#ff7043' : '#eee',
-          color: step === idx ? '#fff' : '#888',
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
-          fontWeight: 700,
-          fontSize: 18,
-          border: step === idx ? '2px solid #ff7043' : '2px solid #eee',
-          boxShadow: step === idx ? '0 2px 8px #ff704344' : 'none',
-          transition: 'all 0.2s',
-        }}>{idx + 1}</div>
-        <div style={{ minWidth: 90, textAlign: 'center', color: step === idx ? '#ff7043' : '#888', fontWeight: step === idx ? 600 : 400, fontSize: 14, marginTop: 4 }}>{label}</div>
+          gap: '0.5rem'
+        }}>
+          <div style={{
+            minWidth: 48,
+            minHeight: 48,
+            borderRadius: '50%',
+            background: step >= idx ? 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)' : 'rgba(255,255,255,0.2)',
+            color: step >= idx ? '#fff' : 'rgba(255,255,255,0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontWeight: '700',
+            fontSize: '1.2rem',
+            border: step >= idx ? '3px solid #fff' : '3px solid rgba(255,255,255,0.3)',
+            boxShadow: step === idx ? '0 4px 20px rgba(255, 112, 67, 0.4)' : 'none',
+            transition: 'all 0.3s ease',
+            transform: step === idx ? 'scale(1.1)' : 'scale(1)'
+          }}>
+            {step > idx ? '✓' : idx + 1}
+          </div>
+          <div style={{ 
+            textAlign: 'center', 
+            color: step >= idx ? '#fff' : 'rgba(255,255,255,0.7)', 
+            fontWeight: step === idx ? '700' : '500', 
+            fontSize: '0.9rem',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            {label}
+          </div>
+        </div>
         {idx < steps.length - 1 && (
-          <div style={{ flex: 1, height: 2, background: '#eee', margin: '0 8px', minWidth: 32, maxWidth: 60 }}>
-            <div style={{ width: step > idx ? '100%' : '0%', height: '100%', background: '#ff7043', transition: 'width 0.2s' }} />
+          <div style={{ 
+            flex: 1, 
+            height: '3px', 
+            background: 'rgba(255,255,255,0.2)', 
+            margin: '0 1rem', 
+            minWidth: '60px', 
+            borderRadius: '2px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{ 
+              width: step > idx ? '100%' : '0%', 
+              height: '100%', 
+              background: 'linear-gradient(90deg, #ff7043 0%, #ff5722 100%)', 
+              transition: 'width 0.5s ease',
+              borderRadius: '2px'
+            }} />
           </div>
         )}
       </React.Fragment>
@@ -62,39 +104,55 @@ const CheckoutPage = ({ cart, onOrderSuccess }) => {
       onOrderSuccess(orderResult.orderId);
     }
   };
-
   // Render từng bước
   return (
-    <div style={{ maxWidth: 480, margin: '0 auto', padding: 16 }}>
-      <Stepper step={step} />
-      {step === 0 && (
-        <CheckoutCartStep
-          cartItems={cartItems}
-          setCartItems={setCartItems}
-          onNext={nextStep}
-        />
-      )}
-      {step === 1 && (
-        <CheckoutAddressStep
-          deliveryAddress={deliveryAddress}
-          setDeliveryAddress={setDeliveryAddress}
-          onNext={nextStep}
-          onBack={prevStep}
-        />
-      )}
-      {step === 2 && (
-        <CheckoutConfirmStep
-          cartItems={cartItems}
-          deliveryAddress={deliveryAddress}
-          notes={notes}
-          setNotes={setNotes}
-          shippingFee={shippingFee}
-          setShippingFee={setShippingFee}
-          onBack={prevStep}
-          setOrderResult={handleOrderSuccess}
-        />
-      )}
-      {/* Không hiển thị thông báo thành công ở đây nữa, chuyển sang PaymentMethodPage */}
+    <div style={{ 
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
+      padding: '1rem'
+    }}>
+      <div style={{ 
+        maxWidth: '600px', 
+        margin: '0 auto'
+      }}>
+        <Stepper step={step} />
+        
+        <div style={{
+          background: '#fff',
+          borderRadius: '24px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
+          overflow: 'hidden',
+          minHeight: '500px'
+        }}>
+          {step === 0 && (
+            <CheckoutCartStep
+              cartItems={cartItems}
+              setCartItems={setCartItems}
+              onNext={nextStep}
+            />
+          )}
+          {step === 1 && (
+            <CheckoutAddressStep
+              deliveryAddress={deliveryAddress}
+              setDeliveryAddress={setDeliveryAddress}
+              onNext={nextStep}
+              onBack={prevStep}
+            />
+          )}
+          {step === 2 && (
+            <CheckoutConfirmStep
+              cartItems={cartItems}
+              deliveryAddress={deliveryAddress}
+              notes={notes}
+              setNotes={setNotes}
+              shippingFee={shippingFee}
+              setShippingFee={setShippingFee}
+              onBack={prevStep}
+              setOrderResult={handleOrderSuccess}
+            />
+          )}
+        </div>
+      </div>
     </div>
   );
 };

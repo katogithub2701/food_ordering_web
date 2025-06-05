@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import RestaurantDetailPage from './RestaurantDetailPage';
 import { searchRestaurants, fetchCategories } from '../services/restaurantService';
 import { searchFoods, fetchFoodCategories } from '../services/foodService';
+import { useCart } from '../contexts/CartContext';
 
 const SearchBar = ({ query, setQuery, category, setCategory, categories, onSearch, searchType, setSearchType }) => (
   <div style={{ 
@@ -307,14 +308,17 @@ const RestaurantCard = ({ restaurant, onSelect }) => (
   </div>
 );
 
-const FoodCard = ({ food }) => (
-  <div style={{
+const FoodCard = ({ food, onAddToCart, onShowDetail, user }) => (
+  <div 
+    onClick={() => onShowDetail(food)}
+    style={{
     background: '#fff',
     borderRadius: '16px',
     overflow: 'hidden',
     boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
     transition: 'all 0.3s ease',
-    border: '1px solid #f0f0f0'
+    border: '1px solid #f0f0f0',
+    cursor: 'pointer'
   }}
   onMouseOver={(e) => {
     e.currentTarget.style.transform = 'translateY(-4px)';
@@ -377,6 +381,12 @@ const FoodCard = ({ food }) => (
         </div>
       </div>
       
+      {food.restaurant && (
+        <div style={{ fontSize: '13px', color: '#666', margin: '4px 0', fontStyle: 'italic' }}>
+          🏪 {food.restaurant.name}
+        </div>
+      )}
+      
       <p style={{
         margin: '0.5rem 0 1rem 0',
         color: '#666',
@@ -399,20 +409,51 @@ const FoodCard = ({ food }) => (
         }}>
           {food.price.toLocaleString()}₫
         </div>
+        
+        {user && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAddToCart(food.id);
+            }}
+            style={{
+              background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '0.6rem 1rem',
+              fontSize: '12px',
+              fontWeight: '600',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.transform = 'scale(1.05)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.transform = 'scale(1)';
+            }}
+          >
+            🛒 Thêm vào giỏ
+          </button>
+        )}
+      </div>
+      
+      {food.restaurant && (
         <div style={{
           fontSize: '12px',
           color: '#999',
-          textAlign: 'right'
+          paddingTop: '0.5rem',
+          borderTop: '1px solid #f0f0f0'
         }}>
-          <div>{food.restaurant.name}</div>
-          <div>📍 {food.restaurant.address}</div>
+          📍 {food.restaurant.address}
         </div>
-      </div>
+      )}
     </div>
   </div>
 );
 
-function SearchPage({ onBack }) {
+function SearchPage({ onBack, user }) {
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('all');
   const [searchType, setSearchType] = useState('restaurants'); // 'restaurants' hoặc 'foods'
@@ -425,6 +466,8 @@ function SearchPage({ onBack }) {
   const [hasSearched, setHasSearched] = useState(false);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, total: 0 });
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
+  const [selectedFood, setSelectedFood] = useState(null);
+  const { addItem } = useCart();
 
   useEffect(() => {
     fetchCategories()
@@ -475,10 +518,47 @@ function SearchPage({ onBack }) {
     setCategory('all');
   }, [searchType]);
 
+  // Function to add item to cart
+  const handleAddToCart = async (foodId) => {
+    if (!user) {
+      alert('Vui lòng đăng nhập để thêm món vào giỏ hàng.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/cart/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: user.username,
+          foodId: foodId,
+          quantity: 1
+        })
+      });
+
+      if (response.ok) {
+        const food = foods.find(f => f.id === foodId);
+        addItem({
+          id: foodId,
+          name: food.name,
+          price: food.price,
+          imageUrl: food.imageUrl,
+          restaurantName: food.restaurant?.name || 'Không rõ'
+        });
+        alert('Đã thêm món vào giỏ hàng!');
+      } else {
+        alert('Không thể thêm món vào giỏ hàng.');
+      }
+    } catch (err) {
+      console.error('Add to cart error:', err);
+      alert('Lỗi khi thêm vào giỏ hàng.');
+    }
+  };
   if (selectedRestaurantId) {
     return <RestaurantDetailPage 
       restaurantId={selectedRestaurantId} 
       onBack={() => setSelectedRestaurantId(null)} 
+      user={user}
     />;
   }
 
@@ -585,9 +665,7 @@ function SearchPage({ onBack }) {
               ))}
             </div>
           </>
-        )}
-
-        {/* Food Results */}
+        )}        {/* Food Results */}
         {foods.length > 0 && (
           <>
             <div style={{
@@ -600,6 +678,9 @@ function SearchPage({ onBack }) {
                 <FoodCard 
                   key={food.id} 
                   food={food}
+                  onAddToCart={handleAddToCart}
+                  onShowDetail={setSelectedFood}
+                  user={user}
                 />
               ))}
             </div>
@@ -632,9 +713,7 @@ function SearchPage({ onBack }) {
               </button>
             ))}
           </div>
-        )}
-
-        {hasSearched && !loading && restaurants.length === 0 && foods.length === 0 && !error && (
+        )}        {hasSearched && !loading && restaurants.length === 0 && foods.length === 0 && !error && (
           <div style={{ 
             textAlign: 'center', 
             padding: '4rem 2rem',
@@ -650,6 +729,158 @@ function SearchPage({ onBack }) {
           </div>
         )}
       </div>
+
+      {/* Food Detail Modal */}
+      {selectedFood && (
+        <div 
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '1rem'
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedFood(null);
+            }
+          }}
+        >
+          <div style={{
+            background: '#fff',
+            borderRadius: '16px',
+            maxWidth: '500px',
+            width: '100%',
+            maxHeight: '80vh',
+            overflow: 'auto'
+          }}>
+            {selectedFood.imageUrl && (
+              <div style={{
+                width: '100%',
+                height: '250px',
+                background: `url(${selectedFood.imageUrl}) center/cover`,
+                borderRadius: '16px 16px 0 0',
+                position: 'relative'
+              }}>
+                <button
+                  onClick={() => setSelectedFood(null)}
+                  style={{
+                    position: 'absolute',
+                    top: '1rem',
+                    right: '1rem',
+                    background: 'rgba(255,255,255,0.9)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            )}
+            
+            <div style={{ padding: '2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+                <h2 style={{ margin: 0, color: '#333', fontSize: '1.5rem' }}>{selectedFood.name}</h2>
+                <div style={{
+                  background: '#ffeaa7',
+                  padding: '0.5rem 0.8rem',
+                  borderRadius: '12px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}>
+                  ⭐ {selectedFood.rating}
+                </div>
+              </div>
+              
+              {selectedFood.restaurant && (
+                <div style={{ fontSize: '14px', color: '#666', marginBottom: '1rem', fontStyle: 'italic' }}>
+                  🏪 {selectedFood.restaurant.name}
+                </div>
+              )}
+              
+              <div style={{ 
+                background: '#f8f9fa', 
+                padding: '0.5rem 0.8rem', 
+                borderRadius: '8px', 
+                display: 'inline-block',
+                marginBottom: '1rem',
+                fontSize: '14px',
+                color: '#ff7043',
+                fontWeight: '600'
+              }}>
+                {selectedFood.category}
+              </div>
+              
+              <p style={{ color: '#666', lineHeight: '1.6', marginBottom: '1.5rem' }}>
+                {selectedFood.description}
+              </p>
+              
+              {selectedFood.restaurant?.address && (
+                <div style={{ 
+                  fontSize: '14px', 
+                  color: '#888', 
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  📍 {selectedFood.restaurant.address}
+                </div>
+              )}
+              
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderTop: '1px solid #eee',
+                paddingTop: '1.5rem'
+              }}>
+                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ff7043' }}>
+                  {selectedFood.price.toLocaleString()}₫
+                </div>
+                
+                {user && (
+                  <button
+                    onClick={() => {
+                      handleAddToCart(selectedFood.id);
+                      setSelectedFood(null);
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '1rem 2rem',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    🛒 Thêm vào giỏ hàng
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -8,7 +8,7 @@ import OrderManager from './OrderManager';
 import { fetchFoods } from '../services/foodService';
 import { fetchRestaurants } from '../services/restaurantService';
 
-function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode, setShowCart }) {
+function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode, setShowCart, handleLogout }) {
   const [foods, setFoods] = useState([]);
   const [restaurants, setRestaurants] = useState([]);
   const [loadingFoods, setLoadingFoods] = useState(true);
@@ -20,6 +20,7 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
   const [selectedRestaurantId, setSelectedRestaurantId] = useState(null);
   const { addItem } = useCart();
   const [showOrders, setShowOrders] = useState(false);
+  const [selectedFood, setSelectedFood] = useState(null);
 
   useEffect(() => {
     fetchFoods()
@@ -59,15 +60,14 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
   if (showOrders) {
     return <OrderManager user={user} onBackToHome={() => setShowOrders(false)} />;
   }
-
   if (showSearch) {
-    return <SearchPage onBack={() => setShowSearch(false)} />;
+    return <SearchPage onBack={() => setShowSearch(false)} user={user} />;
   }
-
   if (selectedRestaurantId) {
     return <RestaurantDetailPage 
       restaurantId={selectedRestaurantId} 
-      onBack={() => setSelectedRestaurantId(null)} 
+      onBack={() => setSelectedRestaurantId(null)}
+      user={user}
     />;
   }
 
@@ -89,7 +89,7 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
                 style={{ color: '#fff' }}
               />
               <button onClick={() => setShowOrders(true)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đơn hàng của tôi</button>
-              <button onClick={() => setUser(null)} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đăng xuất</button>
+              <button onClick={handleLogout} style={{ background: '#fff', color: '#ff7043', border: 'none', borderRadius: 4, padding: '0.4rem 1rem', fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>Đăng xuất</button>
             </>
           )}
         </div>
@@ -230,20 +230,48 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
             <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
               {filteredFoods.length === 0 ? (
                 <div style={{ color: '#888', fontSize: 18 }}>Không tìm thấy món ăn phù hợp.</div>
-              ) : (
-                filteredFoods.map((food) => (
-                  <div key={food.id} style={{ width: 260, background: '#fbe9e7', borderRadius: 8, padding: 16, textAlign: 'left', boxShadow: '0 1px 4px #0001', position: 'relative' }}>
+              ) : (                filteredFoods.map((food) => (
+                  <div 
+                    key={food.id} 
+                    onClick={() => setSelectedFood(food)}
+                    style={{ 
+                      width: 260, 
+                      background: '#fbe9e7', 
+                      borderRadius: 8, 
+                      padding: 16, 
+                      textAlign: 'left', 
+                      boxShadow: '0 1px 4px #0001', 
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 8px 20px rgba(0,0,0,0.15)';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 1px 4px #0001';
+                    }}
+                  >
                     {food.imageUrl && (
                       <img src={food.imageUrl} alt={food.name} style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 6, marginBottom: 8 }} />
                     )}
                     <div style={{ fontWeight: 600, color: '#ff7043', fontSize: 17 }}>{food.name}</div>
+                    {food.restaurant && (
+                      <div style={{ fontSize: 13, color: '#666', margin: '4px 0', fontStyle: 'italic' }}>
+                        🏪 {food.restaurant.name}
+                      </div>
+                    )}
                     <div style={{ fontSize: 15, margin: '6px 0' }}>{food.description}</div>
                     <div style={{ color: '#ff7043', fontWeight: 600, margin: '8px 0 2px' }}>Giá: {food.price.toLocaleString()}₫</div>
                     <div style={{ color: '#ffa726', fontWeight: 500, marginBottom: '1rem' }}>Đánh giá: {food.rating} / 5</div>
-                    
-                    {user && (
+                      {user && (
                       <button
-                        onClick={() => handleAddToCart(food.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleAddToCart(food.id);
+                        }}
                         style={{
                           width: '100%',
                           background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
@@ -269,12 +297,214 @@ function HomePageContent({ user, setUser, showAuth, setShowAuth, authMode, setAu
           )}
         </section>
       </main>
-      
-      <footer style={{ textAlign: 'center', color: '#888', padding: '1.5rem 0' }}>
+        <footer style={{ textAlign: 'center', color: '#888', padding: '1.5rem 0' }}>
         © {new Date().getFullYear()} Food Delivery App
-      </footer>
+      </footer>      {/* Food Detail Modal */}
+      {selectedFood && (
+        <div 
+          onClick={() => setSelectedFood(null)} // Click vào backdrop để đóng modal
+          style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div 
+            onClick={(e) => e.stopPropagation()} // Ngăn việc đóng modal khi click vào nội dung
+            style={{
+            background: '#fff',
+            borderRadius: '20px',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflow: 'auto',
+            position: 'relative'
+          }}>
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedFood(null)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'rgba(0,0,0,0.1)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                cursor: 'pointer',
+                fontSize: '20px',
+                zIndex: 1001
+              }}
+            >
+              ✕
+            </button>
+
+            {/* Food Image */}
+            {selectedFood.imageUrl && (
+              <img
+                src={selectedFood.imageUrl}
+                alt={selectedFood.name}
+                style={{
+                  width: '100%',
+                  height: '300px',
+                  objectFit: 'cover',
+                  borderRadius: '20px 20px 0 0'
+                }}
+              />
+            )}
+
+            {/* Food Details */}
+            <div style={{ padding: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '1rem'
+              }}>
+                <h2 style={{
+                  margin: 0,
+                  color: '#333',
+                  fontSize: '2rem',
+                  fontWeight: '700'
+                }}>
+                  {selectedFood.name}
+                </h2>
+                
+                <div style={{
+                  background: '#ffeaa7',
+                  padding: '0.5rem 1rem',
+                  borderRadius: '12px',
+                  fontSize: '16px',
+                  fontWeight: '600'
+                }}>
+                  ⭐ {selectedFood.rating}/5
+                </div>
+              </div>
+
+              {/* Restaurant Info */}
+              {selectedFood.restaurant && (
+                <div style={{
+                  background: '#f8f9fa',
+                  padding: '1rem',
+                  borderRadius: '12px',
+                  marginBottom: '1.5rem'
+                }}>
+                  <div style={{
+                    color: '#666',
+                    fontSize: '14px',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Nhà hàng
+                  </div>
+                  <div style={{
+                    color: '#ff7043',
+                    fontWeight: '600',
+                    fontSize: '16px'
+                  }}>
+                    🏪 {selectedFood.restaurant.name}
+                  </div>
+                  {selectedFood.restaurant.address && (
+                    <div style={{
+                      color: '#666',
+                      fontSize: '14px',
+                      marginTop: '0.5rem'
+                    }}>
+                      📍 {selectedFood.restaurant.address}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Description */}
+              <div style={{
+                marginBottom: '1.5rem'
+              }}>
+                <h3 style={{
+                  color: '#333',
+                  fontSize: '1.2rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  Mô tả
+                </h3>
+                <p style={{
+                  color: '#666',
+                  lineHeight: '1.6',
+                  margin: 0
+                }}>
+                  {selectedFood.description}
+                </p>
+              </div>
+
+              {/* Category */}
+              {selectedFood.category && (
+                <div style={{
+                  marginBottom: '1.5rem'
+                }}>
+                  <span style={{
+                    background: '#e3f2fd',
+                    color: '#1976d2',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '20px',
+                    fontSize: '14px',
+                    fontWeight: '600'
+                  }}>
+                    🏷️ {selectedFood.category}
+                  </span>
+                </div>
+              )}
+
+              {/* Price and Add to Cart */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                paddingTop: '1rem',
+                borderTop: '1px solid #eee'
+              }}>
+                <div style={{
+                  color: '#ff7043',
+                  fontSize: '2rem',
+                  fontWeight: '700'
+                }}>
+                  {selectedFood.price.toLocaleString()}₫
+                </div>
+                
+                {user && (
+                  <button
+                    onClick={() => {
+                      handleAddToCart(selectedFood.id);
+                      setSelectedFood(null);
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '12px',
+                      padding: '1rem 2rem',
+                      fontSize: '16px',
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    🛒 Thêm vào giỏ hàng
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-export default HomePageContent;
+export default HomePage;

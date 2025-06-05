@@ -91,7 +91,14 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/foods', async (req, res) => {
   try {
     const foods = await Food.findAll({
-      attributes: ['id', 'name', 'description', 'price', 'rating', 'imageUrl']
+      attributes: ['id', 'name', 'description', 'price', 'rating', 'imageUrl', 'category'],
+      include: [{
+        model: Restaurant,
+        attributes: ['id', 'name', 'address'],
+        where: { isActive: true },
+        required: false
+      }],
+      where: { isAvailable: true }
     });
     res.json(foods.map(food => ({
       id: food.id,
@@ -99,7 +106,13 @@ app.get('/api/foods', async (req, res) => {
       description: food.description,
       price: food.price,
       rating: food.rating,
-      imageUrl: food.imageUrl || ''
+      imageUrl: food.imageUrl || '',
+      category: food.category,
+      restaurant: food.Restaurant ? {
+        id: food.Restaurant.id,
+        name: food.Restaurant.name,
+        address: food.Restaurant.address
+      } : null
     })));
   } catch (err) {
     res.status(500).json({ message: 'Lỗi server.' });
@@ -334,8 +347,7 @@ app.get('/api/foods/search', async (req, res) => {
     if (category && category !== 'all') {
       whereClause.category = category;
     }
-    
-    const foods = await Food.findAndCountAll({
+      const foods = await Food.findAndCountAll({
       where: whereClause,
       include: [{
         model: Restaurant,
