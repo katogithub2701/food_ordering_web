@@ -8,17 +8,21 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .auth-modal {
   background: #fff;
   border-radius: 18px;
   box-shadow: 0 8px 32px #0002, 0 1.5px 8px #ff704344;
-  padding: 40px 32px 32px 32px;
+  padding: 24px 20px 20px 20px;
   min-width: 350px;
   max-width: 95vw;
+  max-height: 95vh;
   position: relative;
   animation: fadeInScale 0.3s cubic-bezier(.4,2,.6,1) 1;
+  overflow-y: auto;
 }
 
 @keyframes fadeInScale {
@@ -44,8 +48,8 @@
 .auth-title {
   text-align: center;
   color: #ff7043;
-  margin-bottom: 28px;
-  font-size: 2rem;
+  margin-bottom: 16px;
+  font-size: 1.4rem;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -154,20 +158,112 @@
   font-size: 1rem;
 }
 
+/* Restaurant Registration Form Specific Styles */
+.restaurant-form {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.form-section {
+  margin-bottom: 12px;
+}
+
+.section-title {
+  color: #ff7043;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #ff704320;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-row.single {
+  grid-template-columns: 1fr;
+}
+
+.form-row.triple {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.auth-field.compact {
+  margin-bottom: 8px;
+}
+
+.auth-field.compact label {
+  font-size: 0.85rem;
+  margin-bottom: 3px;
+  font-weight: 500;
+}
+
+.auth-input.compact {
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  border-radius: 6px;
+}
+
+.auth-input.compact:focus {
+  box-shadow: 0 0 0 1px #ff704322;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  
+  .form-row.triple {
+    grid-template-columns: 1fr;
+  }
+  
+  .restaurant-form {
+    max-width: 100%;
+  }
+  
+  .auth-modal {
+    padding: 16px 12px 12px 12px;
+    margin: 10px;
+  }
+  
+  .auth-field.compact {
+    margin-bottom: 6px;
+  }
+  
+  .form-section {
+    margin-bottom: 10px;
+  }
+  
+  .section-title {
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+  }
+}
+
 @media (max-width: 480px) {
   .auth-modal {
-    padding: 24px 6vw 18px 6vw;
-    min-width: unset;
+    max-height: 98vh;
+    margin: 5px;
   }
+  
   .auth-title {
-    font-size: 1.3rem;
+    font-size: 1.1rem;
   }
-  .auth-input {
-    font-size: 1rem;
-    padding: 11px 10px;
-    border-radius: 6px;
+  
+  .auth-input.compact {
+    padding: 6px 8px;
+    font-size: 0.85rem;
   }
-  .auth-field label {
-    font-size: 1rem;
+  
+  .auth-field.compact label {
+    font-size: 0.8rem;
   }
 }

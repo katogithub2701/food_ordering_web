@@ -8,10 +8,15 @@ import RestaurantPortal from './pages/RestaurantPortal';
 import CartSidebar from './components/CartSidebar';
 import Toast from './components/Toast';
 
-function App() {
-  const [user, setUser] = React.useState(() => {
+function App() {  const [user, setUser] = React.useState(() => {
     const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
+    const token = localStorage.getItem('token');
+    if (saved && token) {
+      const userData = JSON.parse(saved);
+      userData.token = token; // Ensure token is available
+      return userData;
+    }
+    return null;
   });
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('login');
@@ -20,11 +25,11 @@ function App() {
   const [lastOrderId, setLastOrderId] = useState(null);
   const [showCart, setShowCart] = useState(false);
   const [cartForCheckout, setCartForCheckout] = useState(null);
-
   // Hàm đăng xuất
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
   return (
     <CartProvider user={user}>
