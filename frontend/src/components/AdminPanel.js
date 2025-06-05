@@ -73,18 +73,14 @@ function AdminPanel() {
     try {
       // In real app: API call to update status
       // await updateOrderStatus(orderId, newStatus);
-      
-      setOrders(prevOrders => 
+        setOrders(prevOrders => 
         prevOrders.map(order => 
           order.id === orderId 
             ? { ...order, status: newStatus }
             : order
         )
-      );
-
-      console.log(`Order ${orderId} status updated to: ${newStatus}`);
-    } catch (error) {
-      console.error('Failed to update order status:', error);
+      );    } catch (error) {
+      // Error handling for order status update
     }
   };
 

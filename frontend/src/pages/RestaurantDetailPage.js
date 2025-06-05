@@ -18,9 +18,7 @@ function RestaurantDetailPage({ restaurantId, onBack, user }) {
     try {
       await addItem(foodId, 1);
       // Hiện thông báo toast khi thêm thành công
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Đã thêm món vào giỏ hàng!' } }));
-    } catch (err) {
-      console.error('Add to cart error:', err);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Đã thêm món vào giỏ hàng!' } }));    } catch (err) {
       alert('Lỗi khi thêm vào giỏ hàng.');
     }
   };

@@ -175,15 +175,12 @@ class OrderStatusService {
    * @param {Object} order - Đối tượng đơn hàng
    * @param {string} fromStatus - Trạng thái cũ
    * @param {string} toStatus - Trạng thái mới
-   */
-  static async sendStatusNotification(order, fromStatus, toStatus) {
+   */  static async sendStatusNotification(order, fromStatus, toStatus) {
     // TODO: Implement notification system
     // - Push notification
     // - Email
     // - SMS
     // - WebSocket real-time update
-    
-    console.log(`Đơn hàng #${order.id} đã chuyển từ "${fromStatus}" sang "${toStatus}"`);
   }
 
   /**
@@ -232,9 +229,7 @@ class OrderStatusService {
         );
       }
 
-      return expiredOrders.length;
-    } catch (error) {
-      console.error('Lỗi khi hủy đơn hàng quá hạn:', error);
+      return expiredOrders.length;    } catch (error) {
       return 0;
     }
   }
@@ -266,9 +261,7 @@ class OrderStatusService {
         );
       }
 
-      return deliveredOrders.length;
-    } catch (error) {
-      console.error('Lỗi khi hoàn thành đơn hàng:', error);
+      return deliveredOrders.length;    } catch (error) {
       return 0;
     }
   }

@@ -13,12 +13,27 @@ function OrderTracking({ orderId, onBack, user }) {
     setRefreshing(true);
     setError('');
     fetchOrderDetail(orderId, user.token)
-      .then(res => {
-        if (res.success) {
+      .then(res => {        if (res.success) {
           // Chuyển đổi dữ liệu API sang format UI
           const o = res.data;
+          
+          // Calculate totals if not provided by backend
+          const itemsTotal = o.items ? o.items.reduce((sum, item) => {
+            return sum + ((item.price || 0) * (item.quantity || 0));
+          }, 0) : 0;
+          
+          const deliveryFee = o.deliveryFee || o.shippingFee || 0;
+          const discount = o.discount || 0;
+          const finalAmount = o.finalAmount || o.total || (itemsTotal + deliveryFee - discount);
+          
           setOrder({
             ...o,
+            // Ensure all required fields are present
+            totalAmount: o.totalAmount || itemsTotal,
+            deliveryFee: deliveryFee,
+            discount: discount,
+            finalAmount: finalAmount,
+            date: o.date || o.createdAt,
             statusText: o.status && (window.getStatusLabel ? window.getStatusLabel(o.status) : o.status),
             timeline: o.statusHistory?.map(h => ({
               status: h.toStatus,

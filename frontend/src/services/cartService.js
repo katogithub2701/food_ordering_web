@@ -15,9 +15,7 @@ export async function fetchCart(username) {
       throw new Error(errorData.message || 'Không lấy được giỏ hàng');
     }
     
-    return res.json();
-  } catch (error) {
-    console.error('Fetch cart error:', error);
+    return res.json();  } catch (error) {
     throw new Error('Không thể kết nối đến server');
   }
 }
@@ -37,9 +35,7 @@ export async function addToCart(username, foodId, quantity = 1) {
     
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Không thể thêm vào giỏ hàng');
-    return data;
-  } catch (error) {
-    console.error('Add to cart error:', error);
+    return data;  } catch (error) {
     throw new Error('Không thể thêm vào giỏ hàng');
   }
 }
@@ -59,9 +55,7 @@ export async function updateCartItem(username, cartItemId, quantity) {
     
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Không thể cập nhật giỏ hàng');
-    return data;
-  } catch (error) {
-    console.error('Update cart item error:', error);
+    return data;  } catch (error) {
     throw new Error('Không thể cập nhật giỏ hàng');
   }
 }
@@ -81,9 +75,7 @@ export async function removeFromCart(username, cartItemId) {
     
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Không thể xóa khỏi giỏ hàng');
-    return data;
-  } catch (error) {
-    console.error('Remove from cart error:', error);
+    return data;  } catch (error) {
     throw new Error('Không thể xóa khỏi giỏ hàng');
   }
 }
@@ -103,9 +95,7 @@ export async function clearCart(username) {
     
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'Không thể xóa giỏ hàng');
-    return data;
-  } catch (error) {
-    console.error('Clear cart error:', error);
+    return data;  } catch (error) {
     throw new Error('Không thể xóa giỏ hàng');
   }
 }

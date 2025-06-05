@@ -59,15 +59,10 @@ export function CartProvider({ children, user }) {
 
   const loadCart = async () => {
     if (!user?.username) return;
-    
-    try {
+      try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      console.log('Loading cart for user:', user.username);
       const cart = await fetchCart(user.username);
-      console.log('Cart loaded:', cart);
-      dispatch({ type: 'SET_CART', payload: cart });
-    } catch (error) {
-      console.error('Load cart error:', error);
+      dispatch({ type: 'SET_CART', payload: cart });    } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
   };
@@ -76,15 +71,10 @@ export function CartProvider({ children, user }) {
     if (!user?.username) {
       dispatch({ type: 'SET_ERROR', payload: 'Vui lòng đăng nhập để thêm vào giỏ hàng' });
       return;
-    }
-
-    try {
-      console.log('Adding to cart:', { username: user.username, foodId, quantity });
+    }    try {
       await addToCart(user.username, foodId, quantity);
       await loadCart();
-      dispatch({ type: 'ADD_NOTIFICATION', payload: 'Đã thêm vào giỏ hàng!' });
-    } catch (error) {
-      console.error('Add item error:', error);
+      dispatch({ type: 'ADD_NOTIFICATION', payload: 'Đã thêm vào giỏ hàng!' });    } catch (error) {
       dispatch({ type: 'SET_ERROR', payload: error.message });
     }
   };

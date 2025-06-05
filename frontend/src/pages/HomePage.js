@@ -48,9 +48,8 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
     try {
       await addItem(foodId, 1);
       // Hiện toast khi đã thêm thành công
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Đã thêm món vào giỏ hàng!' } }));
-    } catch (error) {
-      console.error('Error adding to cart:', error);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Đã thêm món vào giỏ hàng!' } }));    } catch (error) {
+      // Error handling for add to cart
     }
   };
 

@@ -5,15 +5,11 @@ const User = require('../models/User');
 const JWT_SECRET = process.env.JWT_SECRET || '123';
 
 // Middleware xác thực JWT token
-const authenticateToken = async (req, res, next) => {
-  try {
+const authenticateToken = async (req, res, next) => {  try {
     const authHeader = req.headers['authorization'];
-    console.log('[AUTH] Authorization header:', authHeader); // LOG
     const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
-    console.log('[AUTH] Extracted token:', token); // LOG
 
     if (!token) {
-      console.log('[AUTH] No token found, returning 401'); // LOG
       return res.status(401).json({ 
         error: 'ACCESS_TOKEN_REQUIRED',
         message: 'Access token is required' 
@@ -22,11 +18,9 @@ const authenticateToken = async (req, res, next) => {
 
     // Verify JWT token
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('[AUTH] Decoded JWT:', decoded); // LOG
     // Lấy thông tin user từ database
     const user = await User.findByPk(decoded.userId);
     if (!user) {
-      console.log('[AUTH] User not found for userId:', decoded.userId); // LOG
       return res.status(401).json({ 
         error: 'USER_NOT_FOUND',
         message: 'User not found' 
@@ -39,10 +33,8 @@ const authenticateToken = async (req, res, next) => {
       username: user.username,
       email: user.email
     };
-    console.log('[AUTH] Authenticated user:', req.user); // LOG
     next();
   } catch (error) {
-    console.log('[AUTH] Error:', error); // LOG
     if (error.name === 'JsonWebTokenError') {
       return res.status(401).json({ 
         error: 'INVALID_TOKEN',

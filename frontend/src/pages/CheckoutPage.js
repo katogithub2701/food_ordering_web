@@ -145,14 +145,7 @@ const CheckoutPage = ({ cart, onOrderSuccess }) => {
               <CheckoutCartStep
                 cartItems={cartItems}
                 setCartItems={setCartItems}
-                onNext={nextStep}
-              />
-              {/* Danh sách tên món ăn đã đặt */}
-              {cartItems && cartItems.length > 0 && (
-                <div style={{ fontSize: 15, color: '#333', fontWeight: 500, overflowX: 'auto', whiteSpace: 'nowrap', margin: '16px 0 0 0', textAlign: 'center' }}>
-                  Đã chọn: {cartItems.map(item => item.name || (item.food && item.food.name) || '').filter(Boolean).join(', ')}
-                </div>
-              )}
+                onNext={nextStep}              />
             </>
           )}
           {step === 1 && (

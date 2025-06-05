@@ -36,15 +36,17 @@ router.post('/', authenticateToken, async (req, res) => {
     const finalAmount = itemsTotal + (shippingFee || 0);
     if (totalAmount && Math.abs(finalAmount - totalAmount) > 1000) {
       return res.status(400).json({ message: 'Tổng tiền không khớp.' });
-    }
-    // Lưu đơn hàng
+    }    // Lưu đơn hàng
     const order = await Order.create({
       userId,
       total: finalAmount,
       status: 'pending',
-      deliveryAddress: `${deliveryAddress.fullName}, ${deliveryAddress.phone}, ${deliveryAddress.street}, ${deliveryAddress.ward || ''}, ${deliveryAddress.district || ''}, ${deliveryAddress.city || ''}`,
+      deliveryAddress: `${deliveryAddress.street}, ${deliveryAddress.ward ? deliveryAddress.ward + ', ' : ''}${deliveryAddress.district}, ${deliveryAddress.city || deliveryAddress.province}`,
       contactPhone: deliveryAddress.phone,
+      recipientName: deliveryAddress.fullName,
       customerNotes: notes || '',
+      shippingFee: shippingFee || 0,
+      paymentMethod: 'cash', // Default payment method
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -175,9 +177,7 @@ router.get('/', authenticateToken, async (req, res) => {
         }
       }
     });
-
   } catch (error) {
-    console.error('Error fetching orders:', error);
     res.status(500).json({
       success: false,
       error: 'FETCH_ORDERS_ERROR',
@@ -221,15 +221,32 @@ router.get('/:orderId', authenticateToken, async (req, res) => {
     const statusHistory = await OrderStatusHistory.findAll({
       where: { orderId },
       order: [['createdAt', 'ASC']]
-    });
-
+    });    // Calculate totals
+    const itemsTotal = order.OrderItems.reduce((sum, item) => {
+      return sum + (parseFloat(item.price) * item.quantity);
+    }, 0);
+    const shippingFee = parseFloat(order.shippingFee || 0);
+    const totalAmount = parseFloat(order.total);
+    const discount = Math.max(0, itemsTotal + shippingFee - totalAmount);
+    
     // Format response
     const formattedOrder = {
       id: order.id,
-      total: parseFloat(order.total),
+      total: totalAmount,
+      totalAmount: itemsTotal, // Items subtotal
+      deliveryFee: shippingFee,
+      shippingFee: shippingFee,
+      discount: discount,
+      finalAmount: totalAmount, // Final total including shipping and discounts
       status: order.status,
       createdAt: order.createdAt,
       updatedAt: order.updatedAt,
+      date: order.createdAt, // Add date field for frontend compatibility
+      deliveryAddress: order.deliveryAddress,
+      contactPhone: order.contactPhone,
+      recipientName: order.recipientName,
+      customerNotes: order.customerNotes,
+      paymentMethod: order.paymentMethod,
       items: order.OrderItems.map(item => ({
         id: item.id,
         foodId: item.foodId,
@@ -254,9 +271,7 @@ router.get('/:orderId', authenticateToken, async (req, res) => {
       success: true,
       data: formattedOrder
     });
-
   } catch (error) {
-    console.error('Error fetching order details:', error);
     res.status(500).json({
       success: false,
       error: 'FETCH_ORDER_ERROR',
@@ -341,9 +356,7 @@ router.put('/internal/:orderId/status', authenticateToken, requireAdmin, async (
       },
       message: 'Order status updated successfully'
     });
-
   } catch (error) {
-    console.error('Error updating order status:', error);
     res.status(500).json({
       success: false,
       error: 'UPDATE_STATUS_ERROR',

@@ -548,9 +548,7 @@ function SearchPage({ onBack, user }) {
         alert('Đã thêm món vào giỏ hàng!');
       } else {
         alert('Không thể thêm món vào giỏ hàng.');
-      }
-    } catch (err) {
-      console.error('Add to cart error:', err);
+      }    } catch (err) {
       alert('Lỗi khi thêm vào giỏ hàng.');
     }
   };
