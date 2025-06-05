@@ -12,11 +12,11 @@ router.get('/user-orders', async (req, res) => {
   if (!username) return res.status(400).json({ message: 'Thiếu username.' });
   try {
     const user = await User.findOne({ where: { username } });
-    if (!user) return res.status(404).json({ message: 'Không tìm thấy user.' });
-    const orders = await Order.findAll({
+    if (!user) return res.status(404).json({ message: 'Không tìm thấy user.' });    const orders = await Order.findAll({
       where: { userId: user.id },
       include: [{
         model: OrderItem,
+        as: 'OrderItems',
         include: [{ model: Food }]
       }],
       order: [['createdAt', 'DESC']]

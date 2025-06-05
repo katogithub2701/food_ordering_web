@@ -63,21 +63,43 @@ router.get('/orders', authenticateToken, requireRestaurantRole, async (req, res)
     // Build order clause
     const validSortFields = ['createdAt', 'updatedAt', 'total', 'status'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    const order = [[sortField, sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']];
+    const order = [[sortField, sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']];    // Get orders that contain items from this restaurant
+    // First, find order IDs that have items from this restaurant
+    const orderIds = await OrderItem.findAll({
+      include: [{
+        model: Food,
+        where: { restaurantId: restaurantId },
+        attributes: []
+      }],
+      attributes: ['orderId'],
+      group: ['orderId'],
+      raw: true
+    });
 
-    // Get orders that contain items from this restaurant
+    const orderIdList = orderIds.map(item => item.orderId);
+
+    if (orderIdList.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          orders: [],
+          pagination: {
+            currentPage: pageNum,
+            totalPages: 0,
+            totalItems: 0,
+            itemsPerPage: limitNum
+          }
+        }
+      });
+    }
+
+    // Add order ID filter to where conditions
+    whereConditions.id = { [Op.in]: orderIdList };
+
+    // Now get the orders with their details
     const { count, rows: orders } = await Order.findAndCountAll({
       where: whereConditions,
       include: [{
-        model: OrderItem,
-        as: 'OrderItems',
-        include: [{
-          model: Food,
-          where: { restaurantId: restaurantId },
-          attributes: ['id', 'name', 'imageUrl', 'restaurantId']
-        }],
-        required: true // Only include orders that have items from this restaurant
-      }, {
         model: User,
         attributes: ['id', 'username', 'email']
       }],
@@ -87,26 +109,36 @@ router.get('/orders', authenticateToken, requireRestaurantRole, async (req, res)
       distinct: true
     });
 
-    // Format response
-    const formattedOrders = orders.map(order => ({
-      id: order.id,
-      total: parseFloat(order.total),
-      status: order.status,
-      createdAt: order.createdAt,
-      updatedAt: order.updatedAt,
-      deliveryAddress: order.deliveryAddress,
-      contactPhone: order.contactPhone,
-      recipientName: order.recipientName,
-      customerNotes: order.customerNotes,
-      paymentMethod: order.paymentMethod,
-      customer: {
-        id: order.User?.id,
-        username: order.User?.username,
-        email: order.User?.email
-      },
-      items: order.OrderItems
-        .filter(item => item.Food && item.Food.restaurantId === restaurantId)
-        .map(item => ({
+    // Get order items separately for better control
+    const orderIdsToFetch = orders.map(order => order.id);
+    const orderItems = await OrderItem.findAll({
+      where: { orderId: { [Op.in]: orderIdsToFetch } },
+      include: [{
+        model: Food,
+        where: { restaurantId: restaurantId },
+        attributes: ['id', 'name', 'imageUrl', 'restaurantId']
+      }]
+    });    // Format response
+    const formattedOrders = orders.map(order => {
+      const orderItemsForThisOrder = orderItems.filter(item => item.orderId === order.id);
+      
+      return {
+        id: order.id,
+        total: parseFloat(order.total),
+        status: order.status,
+        createdAt: order.createdAt,
+        updatedAt: order.updatedAt,
+        deliveryAddress: order.deliveryAddress,
+        contactPhone: order.contactPhone,
+        recipientName: order.recipientName,
+        customerNotes: order.customerNotes,
+        paymentMethod: order.paymentMethod,
+        customer: {
+          id: order.User?.id,
+          username: order.User?.username,
+          email: order.User?.email
+        },
+        items: orderItemsForThisOrder.map(item => ({
           id: item.id,
           foodId: item.foodId,
           foodName: item.Food?.name,
@@ -114,7 +146,8 @@ router.get('/orders', authenticateToken, requireRestaurantRole, async (req, res)
           price: parseFloat(item.price),
           imageUrl: item.Food?.imageUrl
         }))
-    }));
+      };
+    });
 
     const totalPages = Math.ceil(count / limitNum);
     const hasNextPage = pageNum < totalPages;

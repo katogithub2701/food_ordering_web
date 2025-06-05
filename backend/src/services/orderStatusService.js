@@ -39,7 +39,8 @@ const STATUS_TRANSITIONS = {
 // Quyền hạn thay đổi trạng thái
 const STATUS_PERMISSIONS = {
   customer: {
-    [ORDER_STATUS.PENDING]: [ORDER_STATUS.CANCELLED]
+    [ORDER_STATUS.PENDING]: [ORDER_STATUS.CANCELLED],
+    [ORDER_STATUS.DELIVERING]: [ORDER_STATUS.DELIVERED]
   },
   restaurant: {
     [ORDER_STATUS.PENDING]: [ORDER_STATUS.CONFIRMED, ORDER_STATUS.CANCELLED],
@@ -73,7 +74,6 @@ class OrderStatusService {
     const validTransitions = STATUS_TRANSITIONS[fromStatus] || [];
     return validTransitions.includes(toStatus);
   }
-
   /**
    * Kiểm tra quyền hạn thay đổi trạng thái
    * @param {string} userRole - Vai trò người dùng (customer, restaurant, driver, system, admin)
@@ -82,16 +82,35 @@ class OrderStatusService {
    * @returns {boolean}
    */
   static hasPermission(userRole, fromStatus, toStatus) {
+    console.log('=== hasPermission Debug ===');
+    console.log('userRole:', userRole);
+    console.log('fromStatus:', fromStatus);
+    console.log('toStatus:', toStatus);
+    
     if (userRole === 'admin') {
-      return this.canTransition(fromStatus, toStatus);
+      const canTransition = this.canTransition(fromStatus, toStatus);
+      console.log('Admin permission check - canTransition:', canTransition);
+      return canTransition;
     }
 
     const userPermissions = STATUS_PERMISSIONS[userRole] || {};
-    const allowedTransitions = userPermissions[fromStatus] || [];
+    console.log('userPermissions:', userPermissions);
     
-    return allowedTransitions.includes(toStatus) && this.canTransition(fromStatus, toStatus);
+    const allowedTransitions = userPermissions[fromStatus] || [];
+    console.log('allowedTransitions for', fromStatus, ':', allowedTransitions);
+    
+    const hasTransitionPermission = allowedTransitions.includes(toStatus);
+    console.log('hasTransitionPermission:', hasTransitionPermission);
+    
+    const canTransition = this.canTransition(fromStatus, toStatus);
+    console.log('canTransition:', canTransition);
+    
+    const result = hasTransitionPermission && canTransition;
+    console.log('Final result:', result);
+    console.log('=== End hasPermission Debug ===');
+    
+    return result;
   }
-
   /**
    * Cập nhật trạng thái đơn hàng
    * @param {number} orderId - ID đơn hàng
@@ -104,6 +123,14 @@ class OrderStatusService {
    */
   static async updateOrderStatus(orderId, newStatus, changedBy, changedById = null, reason = null, notes = null) {
     try {
+      console.log('=== updateOrderStatus Debug ===');
+      console.log('orderId:', orderId);
+      console.log('newStatus:', newStatus);
+      console.log('changedBy:', changedBy);
+      console.log('changedById:', changedById);
+      console.log('reason:', reason);
+      console.log('notes:', notes);
+      
       // Lấy thông tin đơn hàng hiện tại
       const order = await Order.findByPk(orderId);
       if (!order) {
@@ -111,6 +138,7 @@ class OrderStatusService {
       }
 
       const currentStatus = order.status;
+      console.log('currentStatus from DB:', currentStatus);
 
       // Kiểm tra quyền hạn
       if (!this.hasPermission(changedBy, currentStatus, newStatus)) {

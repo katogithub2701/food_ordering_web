@@ -53,10 +53,9 @@ router.post('/', authenticateToken, async (req, res) => {
     // Lưu từng món
     for (const item of orderItems) {
       await OrderItem.create({ ...item, orderId: order.id });
-    }
-    // Lấy lại thông tin đơn hàng trả về
+    }    // Lấy lại thông tin đơn hàng trả về
     const orderData = await Order.findByPk(order.id, {
-      include: [{ model: OrderItem }]
+      include: [{ model: OrderItem, as: 'OrderItems' }]
     });
     res.status(201).json({
       orderId: order.id,
@@ -115,13 +114,12 @@ router.get('/', authenticateToken, async (req, res) => {
     // Build order clause
     const validSortFields = ['createdAt', 'updatedAt', 'total', 'status'];
     const sortField = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-    const order = [[sortField, sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']];
-
-    // Get orders with pagination
+    const order = [[sortField, sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']];    // Get orders with pagination
     const { count, rows: orders } = await Order.findAndCountAll({
       where: whereConditions,
       include: [{
         model: OrderItem,
+        as: 'OrderItems',
         include: [{
           model: Food,
           attributes: ['id', 'name', 'imageUrl']
@@ -202,6 +200,7 @@ router.get('/:orderId', authenticateToken, async (req, res) => {
       },
       include: [{
         model: OrderItem,
+        as: 'OrderItems',
         include: [{
           model: Food,
           attributes: ['id', 'name', 'description', 'imageUrl']

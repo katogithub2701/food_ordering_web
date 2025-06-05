@@ -357,11 +357,10 @@ function RestaurantPortal({ user, handleLogout }) {
                     borderRadius: '12px',
                     boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                   }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                      <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>                      <div>
                         <h3 style={{ margin: 0, color: '#333' }}>Đơn hàng #{order.id}</h3>
                         <p style={{ margin: '0.5rem 0', color: '#666' }}>
-                          Khách hàng: {order.User?.username || 'N/A'}
+                          Khách hàng: {order.customer?.username || order.recipientName || 'N/A'}
                         </p>
                         <p style={{ margin: '0.5rem 0', color: '#666' }}>
                           Địa chỉ: {order.deliveryAddress}
@@ -382,28 +381,41 @@ function RestaurantPortal({ user, handleLogout }) {
                         }}>
                           {getStatusText(order.status)}
                         </div>
-                        <div style={{ color: '#ff7043', fontWeight: '700', fontSize: '1.2rem' }}>
-                          {order.total.toLocaleString()}₫
-                        </div>
+                        
                       </div>
                     </div>
 
                     {/* Order Items */}
                     <div style={{ marginBottom: '1rem' }}>
                       <h4 style={{ color: '#333', marginBottom: '0.5rem' }}>Món ăn:</h4>
-                      {order.OrderItems?.map(item => (
+                      {/* {order.OrderItems?.map(item => (
                         <div key={item.id} style={{ 
                           display: 'flex', 
                           justifyContent: 'space-between', 
                           padding: '0.5rem 0',
                           borderBottom: '1px solid #f0f0f0'
                         }}>
-                          <span>{item.Food?.name} x {item.quantity}</span>
-                          <span>{(item.price * item.quantity).toLocaleString()}₫</span>
+                          <span style={{ color: '#333' }}>{item.food.} x {item.quantity}</span>
+                          <span style={{ color: '#ff7043' }}>{(item.price * item.quantity).toLocaleString()}₫</span>
                         </div>
-                      ))}
+                      ))} */
+                      // display the names of the foods in the order
+                      order.items?.slice(0, 3).map((item, idx) => (
+                        <div key={idx} style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '0.5rem 0',
+                          borderBottom: '1px solid #f0f0f0'
+                        }}>
+                          <span style={{ color: '#333' }}>{item.foodName} x {item.quantity}</span>
+                          <span style={{ color: '#ff7043' }}>{(item.price * item.quantity).toLocaleString()}₫</span>
                     </div>
-
+                  ))}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: '#666', fontSize: '14px' }}>Tổng cộng:</span>
+                      <span style={{ color: '#333', fontSize: '16px', fontWeight: '600' }}>{order.total.toLocaleString()}₫</span>
+                    </div>
                     {/* Status Update Buttons */}
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                       {getAvailableStatuses(order.status).map(status => (
@@ -588,31 +600,20 @@ function getStatusText(status) {
 }
 
 function getAvailableStatuses(currentStatus) {
+  // Restaurant can only update to: "xác nhận", "đang chuẩn bị", "đang giao"
   const statusFlow = {
     'pending': [
       { value: 'confirmed', label: 'Xác nhận', color: '#3b82f6' },
       { value: 'cancelled', label: 'Hủy đơn', color: '#ef4444' }
     ],
     'confirmed': [
-      { value: 'preparing', label: 'Bắt đầu chuẩn bị', color: '#8b5cf6' },
+      { value: 'preparing', label: 'Đang chuẩn bị', color: '#8b5cf6' },
       { value: 'cancelled', label: 'Hủy đơn', color: '#ef4444' }
     ],
     'preparing': [
-      { value: 'ready_for_pickup', label: 'Sẵn sàng lấy', color: '#22c55e' }
-    ],
-    'ready_for_pickup': [
-      { value: 'picked_up', label: 'Đã được lấy', color: '#06b6d4' }
-    ],
-    'picked_up': [
-      { value: 'delivering', label: 'Đang giao hàng', color: '#0ea5e9' }
-    ],
-    'delivering': [
-      { value: 'delivered', label: 'Đã giao hàng', color: '#10b981' },
-      { value: 'delivery_failed', label: 'Giao hàng thất bại', color: '#ef4444' }
-    ],
-    'delivered': [
-      { value: 'completed', label: 'Hoàn thành', color: '#059669' }
+      { value: 'delivering', label: 'Đang giao', color: '#0ea5e9' }
     ]
+    // Remove all other status transitions - restaurant can only use these 3
   };
   return statusFlow[currentStatus] || [];
 }

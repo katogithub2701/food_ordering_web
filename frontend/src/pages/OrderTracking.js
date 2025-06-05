@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/OrderTracking.css';
-import { fetchOrderDetail } from '../services/orderService';
+import { fetchOrderDetail, updateOrderStatus } from '../services/orderService';
+import { getStatusLabel } from '../utils/orderStatus';
 
 function OrderTracking({ orderId, onBack, user }) {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [refreshing, setRefreshing] = useState(false);
-
-  // Function to fetch order data
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [confirmingDelivery, setConfirmingDelivery] = useState(false);  // Function to fetch order data
   const fetchOrderData = () => {
-    setRefreshing(true);
     setError('');
     fetchOrderDetail(orderId, user.token)
       .then(res => {        if (res.success) {
@@ -33,11 +32,10 @@ function OrderTracking({ orderId, onBack, user }) {
             deliveryFee: deliveryFee,
             discount: discount,
             finalAmount: finalAmount,
-            date: o.date || o.createdAt,
-            statusText: o.status && (window.getStatusLabel ? window.getStatusLabel(o.status) : o.status),
+            date: o.date || o.createdAt,            statusText: o.status && getStatusLabel(o.status),
             timeline: o.statusHistory?.map(h => ({
               status: h.toStatus,
-              label: window.getStatusLabel ? window.getStatusLabel(h.toStatus) : h.toStatus,
+              label: getStatusLabel(h.toStatus),
               time: h.changedAt,
               completed: true,
               description: h.note || '',
@@ -45,16 +43,31 @@ function OrderTracking({ orderId, onBack, user }) {
             })) || []
           });
         } else {
-          setError(res.message || 'Lỗi khi tải chi tiết đơn hàng');
-        }
+          setError(res.message || 'Lỗi khi tải chi tiết đơn hàng');        }
         setLoading(false);
-        setRefreshing(false);
       })
       .catch(e => {
         setError(e.message || 'Lỗi khi tải chi tiết đơn hàng');
         setLoading(false);
-        setRefreshing(false);
       });
+  };
+  // Function to handle delivery confirmation
+  const handleConfirmDelivery = async () => {
+    setConfirmingDelivery(true);
+    try {
+      const result = await updateOrderStatus(orderId, 'delivered', user.token);
+      if (result.success) {
+        setShowConfirmDialog(false);
+        // Refresh order data to show updated status
+        fetchOrderData();
+      } else {
+        setError(result.message || 'Không thể xác nhận đã nhận hàng');
+      }
+    } catch (err) {
+      setError(err.message || 'Không thể xác nhận đã nhận hàng');
+    } finally {
+      setConfirmingDelivery(false);
+    }
   };
 
   useEffect(() => {
@@ -227,9 +240,7 @@ function OrderTracking({ orderId, onBack, user }) {
                 {getEstimatedDeliveryTime(order.estimatedDelivery)}
               </div>
             )}
-          </div>
-
-          {/* Driver Info (if delivering) */}
+          </div>          {/* Driver Info (if delivering) */}
           {order.status === 'delivering' && order.driver && (
             <div style={{
               background: '#f8fafc',
@@ -258,6 +269,48 @@ function OrderTracking({ orderId, onBack, user }) {
                   📞 Gọi tài xế
                 </a>
               </div>
+            </div>
+          )}          {/* Customer Confirmation Button for delivering orders */}
+          {order.status === 'delivering' && (
+            <div style={{
+              background: '#fff3e0',
+              borderRadius: '8px',
+              padding: '1.5rem',
+              textAlign: 'center',
+              marginTop: '1rem',
+              border: '1px solid #ffb74d'
+            }}>
+              <h4 style={{ margin: '0 0 1rem', color: '#f57c00' }}>
+                Đã nhận được đơn hàng?
+              </h4>
+              <p style={{ margin: '0 0 1.5rem', color: '#666', fontSize: '0.9rem' }}>
+                Khi tài xế giao hàng thành công, hãy xác nhận để hoàn tất đơn hàng
+              </p>
+              <button
+                onClick={() => setShowConfirmDialog(true)}
+                style={{
+                  background: '#4caf50',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '1rem 2rem',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 4px rgba(76, 175, 80, 0.3)',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseOver={(e) => {
+                  e.target.style.background = '#45a049';
+                  e.target.style.transform = 'translateY(-1px)';
+                }}
+                onMouseOut={(e) => {
+                  e.target.style.background = '#4caf50';
+                  e.target.style.transform = 'translateY(0)';
+                }}
+              >
+                ✓ Xác nhận đã nhận hàng
+              </button>
             </div>
           )}
         </div>
@@ -397,10 +450,86 @@ function OrderTracking({ orderId, onBack, user }) {
             color: '#666',
             fontSize: '0.9rem'
           }}>
-            Đặt lúc: {formatDate(order.date)} {formatTime(order.date)}
-          </div>
+            Đặt lúc: {formatDate(order.date)} {formatTime(order.date)}          </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {showConfirmDialog && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '1rem'
+        }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: '12px',
+            padding: '2rem',
+            maxWidth: '400px',
+            width: '100%',
+            textAlign: 'center',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📦</div>
+            <h3 style={{ margin: '0 0 1rem', color: '#333' }}>
+              Xác nhận đã nhận hàng
+            </h3>
+            <p style={{ margin: '0 0 2rem', color: '#666', lineHeight: '1.5' }}>
+              Bạn có chắc chắn đã nhận được đơn hàng và hài lòng với chất lượng món ăn không?
+              <br />
+              <br />
+              Sau khi xác nhận, đơn hàng sẽ được hoàn tất và bạn không thể thay đổi.
+            </p>
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              justifyContent: 'center'
+            }}>
+              <button
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={confirmingDelivery}
+                style={{
+                  background: '#f5f5f5',
+                  color: '#666',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: confirmingDelivery ? 'not-allowed' : 'pointer',
+                  opacity: confirmingDelivery ? 0.5 : 1
+                }}
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleConfirmDelivery}
+                disabled={confirmingDelivery}
+                style={{
+                  background: confirmingDelivery ? '#ccc' : '#4caf50',
+                  color: '#fff',
+                  border: 'none',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  cursor: confirmingDelivery ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  boxShadow: confirmingDelivery ? 'none' : '0 2px 4px rgba(76, 175, 80, 0.3)'
+                }}
+              >
+                {confirmingDelivery ? 'Đang xử lý...' : '✓ Xác nhận'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
