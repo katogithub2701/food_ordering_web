@@ -112,6 +112,23 @@ function OrderTracking({ orderId, onBack, user }) {
     );
   }
 
+  // Parse delivery address string if needed
+  let recipientName = order.recipientName;
+  let recipientPhone = order.recipientPhone;
+  let deliveryAddress = order.deliveryAddress;
+  if (!recipientName || !recipientPhone) {
+    // Try to parse from deliveryAddress string: "fullName, phone, street, ward, district, city"
+    if (order.deliveryAddress) {
+      const parts = order.deliveryAddress.split(',').map(s => s.trim());
+      if (parts.length >= 2) {
+        recipientName = parts[0];
+        recipientPhone = parts[1];
+        deliveryAddress = parts.slice(2).join(', ');
+      }
+    }
+    if (order.contactPhone && !recipientPhone) recipientPhone = order.contactPhone;
+  }
+
   return (
     <div style={{ 
       fontFamily: 'sans-serif', 
@@ -230,128 +247,6 @@ function OrderTracking({ orderId, onBack, user }) {
           )}
         </div>
 
-        {/* Timeline */}
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1.5rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-        }}>
-          <h3 style={{ margin: '0 0 1.5rem', color: '#333', fontSize: '1.3rem' }}>
-            Tiến trình đơn hàng
-          </h3>
-          
-          <div style={{ position: 'relative' }}>
-            {order.timeline.map((step, index) => (
-              <div key={step.status} style={{ 
-                display: 'flex',
-                marginBottom: index === order.timeline.length - 1 ? 0 : '2rem',
-                position: 'relative'
-              }}>
-                {/* Timeline Line */}
-                {index < order.timeline.length - 1 && (
-                  <div style={{
-                    position: 'absolute',
-                    left: '15px',
-                    top: '30px',
-                    width: '2px',
-                    height: '2rem',
-                    background: step.completed ? '#66bb6a' : '#e0e0e0'
-                  }} />
-                )}
-                
-                {/* Timeline Dot */}
-                <div style={{
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  background: step.completed ? '#66bb6a' : step.current ? '#ff7043' : '#e0e0e0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: '1rem',
-                  flexShrink: 0,
-                  border: step.current ? '3px solid #ffccbc' : 'none'
-                }}>
-                  {step.completed ? '✓' : step.current ? '●' : '○'}
-                </div>
-                
-                {/* Timeline Content */}
-                <div style={{ flex: 1 }}>
-                  <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'space-between',
-                    alignItems: 'flex-start',
-                    marginBottom: '0.25rem'
-                  }}>
-                    <h4 style={{ 
-                      margin: 0, 
-                      color: step.completed || step.current ? '#333' : '#999',
-                      fontSize: '1rem',
-                      fontWeight: '600'
-                    }}>
-                      {step.label}
-                    </h4>
-                    {step.time && (
-                      <span style={{ 
-                        color: '#666', 
-                        fontSize: '0.9rem',
-                        fontWeight: '500'
-                      }}>
-                        {formatTime(step.time)}
-                      </span>
-                    )}
-                  </div>
-                  <p style={{ 
-                    margin: 0, 
-                    color: step.completed || step.current ? '#666' : '#999',
-                    fontSize: '0.9rem'
-                  }}>
-                    {step.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Restaurant Info */}
-        <div style={{
-          background: '#fff',
-          borderRadius: '12px',
-          padding: '1.5rem',
-          marginBottom: '1.5rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-        }}>
-          <h3 style={{ margin: '0 0 1rem', color: '#333', fontSize: '1.3rem' }}>
-            Thông tin nhà hàng
-          </h3>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              width: '60px',
-              height: '60px',
-              borderRadius: '8px',
-              background: '#f5f5f5',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '2rem'
-            }}>
-              🍕
-            </div>
-            <div style={{ flex: 1 }}>
-              <h4 style={{ margin: '0 0 0.25rem', fontSize: '1.1rem' }}>{order.restaurantName}</h4>
-              <p style={{ margin: '0 0 0.25rem', color: '#666', fontSize: '0.9rem' }}>
-                📍 {order.restaurantAddress}
-              </p>
-              <p style={{ margin: 0, color: '#666', fontSize: '0.9rem' }}>
-                📞 {order.restaurantPhone}
-              </p>
-            </div>
-          </div>
-        </div>
-
         {/* Order Items */}
         <div style={{
           background: '#fff',
@@ -364,47 +259,57 @@ function OrderTracking({ orderId, onBack, user }) {
             Chi tiết đơn hàng
           </h3>
           
-          {order.items.map(item => (
-            <div key={item.id} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 0',
-              borderBottom: '1px solid #f0f0f0'
-            }}>
-              <div style={{
-                width: '60px',
-                height: '60px',
-                borderRadius: '8px',
-                background: '#f5f5f5',
+          {order.items.map(item => {
+            // Ưu tiên hiển thị tên món ăn từ các trường phổ biến
+            const foodName = item.foodName || (item.food && item.food.name) || item.name || 'Món ăn';
+            return (
+              <div key={item.id} style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.5rem'
+                gap: '1rem',
+                padding: '1rem 0',
+                borderBottom: '1px solid #f0f0f0'
               }}>
-                🍽️
-              </div>
-              <div style={{ flex: 1 }}>
-                <h4 style={{ margin: '0 0 0.25rem', fontSize: '1rem' }}>{item.name}</h4>
-                <p style={{ margin: '0 0 0.25rem', color: '#666', fontSize: '0.9rem' }}>
-                  Số lượng: {item.quantity}
-                </p>
-                {item.note && (
-                  <p style={{ margin: 0, color: '#ff7043', fontSize: '0.8rem', fontStyle: 'italic' }}>
-                    Ghi chú: {item.note}
+                <div style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '8px',
+                  background: item.imageUrl ? `url(${item.imageUrl}) center/cover` : '#f5f5f5',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '1.5rem',
+                  overflow: 'hidden'
+                }}>
+                  {!item.imageUrl && '🍽️'}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{ margin: '0 0 0.25rem', fontSize: '1rem' }}>{foodName}</h4>
+                  {item.options && item.options.length > 0 && (
+                    <div style={{ color: '#888', fontSize: '0.85rem', marginBottom: '0.25rem' }}>
+                      Tuỳ chọn: {item.options.map(opt => opt.label || opt.name).join(', ')}
+                    </div>
+                  )}
+                  <p style={{ margin: '0 0 0.25rem', color: '#666', fontSize: '0.9rem' }}>
+                    Số lượng: {item.quantity}
                   </p>
-                )}
-              </div>
-              <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: '600', color: '#ff7043' }}>
-                  {(item.price != null && item.quantity != null) ? (item.price * item.quantity).toLocaleString() : '0'}₫
+                  {item.note && (
+                    <p style={{ margin: 0, color: '#ff7043', fontSize: '0.8rem', fontStyle: 'italic' }}>
+                      Ghi chú: {item.note}
+                    </p>
+                  )}
                 </div>
-                <div style={{ color: '#666', fontSize: '0.8rem' }}>
-                  {item.price != null ? item.price.toLocaleString() : '0'}₫ × {item.quantity}
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontWeight: '600', color: '#ff7043' }}>
+                    {(item.price != null && item.quantity != null) ? (item.price * item.quantity).toLocaleString() : '0'}₫
+                  </div>
+                  <div style={{ color: '#666', fontSize: '0.8rem' }}>
+                    {item.price != null ? item.price.toLocaleString() : '0'}₫ × {item.quantity}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Delivery Info */}
@@ -420,9 +325,9 @@ function OrderTracking({ orderId, onBack, user }) {
           </h3>
           <div style={{ marginBottom: '1rem' }}>
             <h4 style={{ margin: '0 0 0.5rem', color: '#333' }}>Địa chỉ giao hàng</h4>
-            <p style={{ margin: '0 0 0.25rem', fontWeight: '600' }}>{order.recipientName}</p>
-            <p style={{ margin: '0 0 0.25rem', color: '#666' }}>{order.deliveryAddress}</p>
-            <p style={{ margin: 0, color: '#666' }}>📞 {order.recipientPhone}</p>
+            <p style={{ margin: '0 0 0.25rem', fontWeight: '600' }}>{recipientName}</p>
+            <p style={{ margin: '0 0 0.25rem', color: '#666' }}>{deliveryAddress}</p>
+            <p style={{ margin: 0, color: '#666' }}>📞 {recipientPhone}</p>
           </div>
           <div>
             <h4 style={{ margin: '0 0 0.5rem', color: '#333' }}>Phương thức thanh toán</h4>

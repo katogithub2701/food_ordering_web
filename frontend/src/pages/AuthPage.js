@@ -67,6 +67,7 @@ function AuthPage({ initialMode = 'login', onClose, setUser }) {
           const userWithToken = { ...res.user, token: res.token };
           setUser(userWithToken);
           localStorage.setItem('user', JSON.stringify(userWithToken));
+          localStorage.setItem('token', res.token); // Lưu token riêng để các nơi khác lấy dễ
           setTimeout(() => { onClose(); }, 700);
         } else {
           setMessage('Đăng nhập thất bại: Không nhận được token.');

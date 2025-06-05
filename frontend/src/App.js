@@ -6,6 +6,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import PaymentResultPage from './pages/PaymentResultPage';
 import PaymentMethodPage from './pages/PaymentMethodPage';
 import CartSidebar from './components/CartSidebar';
+import Toast from './components/Toast';
 
 function App() {
   const [user, setUser] = React.useState(() => {
@@ -55,6 +56,7 @@ function App() {
               setShowCheckout(true);
             }}
           />
+          <Toast />
         </>
       )}
     </CartProvider>

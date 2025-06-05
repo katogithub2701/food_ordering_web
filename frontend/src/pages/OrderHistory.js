@@ -8,6 +8,14 @@ import {
 } from '../utils/orderStatus';
 import { fetchOrders } from '../services/orderService';
 
+const FILTER_STATUS_MAP = {
+  all: null,
+  pending: ['pending', 'confirmed', 'preparing', 'ready_for_pickup', 'picked_up'],
+  delivering: ['delivering'],
+  completed: ['delivered', 'completed'],
+  cancelled: ['cancelled', 'delivery_failed', 'returning', 'returned', 'refunded']
+};
+
 function OrderHistory({ user, onOrderClick, onBackToHome }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,11 +32,53 @@ function OrderHistory({ user, onOrderClick, onBackToHome }) {
     }
     setLoading(true);
     setError('');
-    fetchOrders({
-      token: user.token,
-      page,
-      status: filter
-    })
+
+    const fetchAllStatuses = async () => {
+      const statusList = FILTER_STATUS_MAP[filter];
+      if (!statusList) {
+        // 'all' tab: fetch all
+        const res = await fetchOrders({ token: user.token, page });
+        return res;
+      }
+      // If only one status, fetch once
+      if (statusList.length === 1) {
+        return await fetchOrders({ token: user.token, page, status: statusList[0] });
+      }
+      // If multiple statuses, fetch all and merge
+      const results = await Promise.all(
+        statusList.map(status => fetchOrders({ token: user.token, page, status }))
+      );
+      // Merge orders, remove duplicates by id
+      let allOrders = [];
+      let totalItems = 0;
+      let totalPages = 1;
+      results.forEach(res => {
+        if (res.success) {
+          allOrders = allOrders.concat(res.data.orders);
+          totalItems += res.data.pagination.totalItems;
+          totalPages = Math.max(totalPages, res.data.pagination.totalPages);
+        }
+      });
+      // Remove duplicate orders by id
+      const uniqueOrders = Object.values(
+        allOrders.reduce((acc, order) => {
+          acc[order.id] = order;
+          return acc;
+        }, {})
+      );
+      return {
+        success: true,
+        data: {
+          orders: uniqueOrders,
+          pagination: {
+            totalPages,
+            totalItems
+          }
+        }
+      };
+    };
+
+    fetchAllStatuses()
       .then(res => {
         if (res.success) {
           setOrders(res.data.orders);

@@ -45,10 +45,10 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
       setAuthMode('login');
       return;
     }
-    
     try {
-      // Luôn dùng addItem từ context, chỉ truyền foodId và quantity
       await addItem(foodId, 1);
+      // Hiện toast khi đã thêm thành công
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Đã thêm món vào giỏ hàng!' } }));
     } catch (error) {
       console.error('Error adding to cart:', error);
     }
@@ -137,7 +137,7 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
                 transition: 'all 0.3s ease'
               }}
             >
-              🔍 Tìm kiếm nưng cao
+              🔍 Tìm kiếm nâng cao
             </button>
           </div>
         </div>

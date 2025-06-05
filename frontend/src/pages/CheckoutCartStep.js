@@ -62,144 +62,147 @@ const CheckoutCartStep = ({ cartItems, setCartItems, onNext }) => {
           <div style={{
             marginBottom: '2rem'
           }}>
-            {cartItems.map((item, idx) => (
-              <div 
-                key={item.itemId + '-' + idx} 
-                style={{ 
-                  background: '#f8f9fa',
-                  borderRadius: '16px',
-                  padding: '1.5rem',
-                  marginBottom: '1rem',
-                  border: '1px solid #e9ecef',
-                  transition: 'all 0.3s ease'
-                }}
-              >
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  marginBottom: '1rem'
-                }}>
-                  <div style={{ flex: 1 }}>
-                    <h3 style={{ 
-                      margin: '0 0 0.5rem 0',
-                      color: '#333',
-                      fontSize: '1.2rem',
-                      fontWeight: '600'
-                    }}>
-                      {item.name}
-                    </h3>
-                    <div style={{ 
-                      color: '#ff7043',
-                      fontSize: '1rem',
-                      fontWeight: '600'
-                    }}>
-                      {item.price.toLocaleString()}₫ / món
-                    </div>
-                  </div>
-                  
-                  <button 
-                    onClick={() => handleRemove(idx)}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#dc3545',
-                      cursor: 'pointer',
-                      fontSize: '1.2rem',
-                      padding: '0.5rem',
-                      borderRadius: '8px',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onMouseOver={(e) => {
-                      e.target.style.background = '#dc3545';
-                      e.target.style.color = '#fff';
-                    }}
-                    onMouseOut={(e) => {
-                      e.target.style.background = 'none';
-                      e.target.style.color = '#dc3545';
-                    }}
-                    title="Xóa khỏi giỏ hàng"
-                  >
-                    🗑️
-                  </button>
-                </div>
-
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  {/* Quantity Controls */}
+            {cartItems.map((item, idx) => {
+              const foodName = item.name || (item.food && item.food.name) || '';
+              return (
+                <div 
+                  key={item.itemId + '-' + idx} 
+                  style={{ 
+                    background: '#f8f9fa',
+                    borderRadius: '16px',
+                    padding: '1.5rem',
+                    marginBottom: '1rem',
+                    border: '1px solid #e9ecef',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
                   <div style={{
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    background: '#fff',
-                    borderRadius: '12px',
-                    padding: '0.5rem',
-                    border: '1px solid #ddd'
+                    justifyContent: 'space-between',
+                    alignItems: 'flex-start',
+                    marginBottom: '1rem'
                   }}>
-                    <button
-                      onClick={() => handleQuantityChange(idx, item.quantity - 1)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#666',
-                        cursor: 'pointer',
+                    <div style={{ flex: 1 }}>
+                      <h3 style={{ 
+                        margin: '0 0 0.5rem 0',
+                        color: '#333',
                         fontSize: '1.2rem',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '6px'
-                      }}
-                      disabled={item.quantity <= 1}
-                    >
-                      −
-                    </button>
-                    
-                    <input 
-                      type="number" 
-                      min={1} 
-                      value={item.quantity} 
-                      onChange={e => handleQuantityChange(idx, e.target.value)}
-                      style={{ 
-                        width: '60px',
-                        textAlign: 'center',
-                        border: 'none',
-                        background: 'none',
+                        fontWeight: '600'
+                      }}>
+                        {foodName}
+                      </h3>
+                      <div style={{ 
+                        color: '#ff7043',
                         fontSize: '1rem',
                         fontWeight: '600'
-                      }}
-                    />
+                      }}>
+                        {item.price.toLocaleString()}₫ / món
+                      </div>
+                    </div>
                     
-                    <button
-                      onClick={() => handleQuantityChange(idx, item.quantity + 1)}
+                    <button 
+                      onClick={() => handleRemove(idx)}
                       style={{
                         background: 'none',
                         border: 'none',
-                        color: '#666',
+                        color: '#dc3545',
                         cursor: 'pointer',
                         fontSize: '1.2rem',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '6px'
+                        padding: '0.5rem',
+                        borderRadius: '8px',
+                        transition: 'all 0.3s ease'
                       }}
+                      onMouseOver={(e) => {
+                        e.target.style.background = '#dc3545';
+                        e.target.style.color = '#fff';
+                      }}
+                      onMouseOut={(e) => {
+                        e.target.style.background = 'none';
+                        e.target.style.color = '#dc3545';
+                      }}
+                      title="Xóa khỏi giỏ hàng"
                     >
-                      +
+                      🗑️
                     </button>
                   </div>
 
-                  {/* Subtotal */}
                   <div style={{
-                    background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
-                    color: '#fff',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '12px',
-                    fontWeight: '700',
-                    fontSize: '1rem'
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}>
-                    {(item.price * item.quantity).toLocaleString()}₫
+                    {/* Quantity Controls */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      background: '#fff',
+                      borderRadius: '12px',
+                      padding: '0.5rem',
+                      border: '1px solid #ddd'
+                    }}>
+                      <button
+                        onClick={() => handleQuantityChange(idx, item.quantity - 1)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#666',
+                          cursor: 'pointer',
+                          fontSize: '1.2rem',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '6px'
+                        }}
+                        disabled={item.quantity <= 1}
+                      >
+                        −
+                      </button>
+                      
+                      <input 
+                        type="number" 
+                        min={1} 
+                        value={item.quantity} 
+                        onChange={e => handleQuantityChange(idx, e.target.value)}
+                        style={{ 
+                          width: '60px',
+                          textAlign: 'center',
+                          border: 'none',
+                          background: 'none',
+                          fontSize: '1rem',
+                          fontWeight: '600'
+                        }}
+                      />
+                      
+                      <button
+                        onClick={() => handleQuantityChange(idx, item.quantity + 1)}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#666',
+                          cursor: 'pointer',
+                          fontSize: '1.2rem',
+                          padding: '0.25rem 0.5rem',
+                          borderRadius: '6px'
+                        }}
+                      >
+                        +
+                      </button>
+                    </div>
+
+                    {/* Subtotal */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+                      color: '#fff',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      fontSize: '1rem'
+                    }}>
+                      {(item.price * item.quantity).toLocaleString()}₫
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Total */}

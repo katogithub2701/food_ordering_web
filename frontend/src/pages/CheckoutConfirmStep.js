@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 const DEFAULT_SHIPPING_FEE = 40000;
 
-const CheckoutConfirmStep = ({ cartItems, deliveryAddress, notes, setNotes, onBack, setOrderResult }) => {
+const CheckoutConfirmStep = ({ cartItems, deliveryAddress, notes, setNotes, onBack, setOrderResult, user }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [shippingFee] = useState(DEFAULT_SHIPPING_FEE);
@@ -14,12 +14,15 @@ const CheckoutConfirmStep = ({ cartItems, deliveryAddress, notes, setNotes, onBa
     setLoading(true);
     setError('');
     try {
+      // Get user token (from props or localStorage fallback)
+      const token = user?.token || (typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}').token : undefined);
+      if (!token) throw new Error('Bạn cần đăng nhập để đặt hàng');
       // Gửi request tạo đơn hàng
       const res = await fetch('http://localhost:5000/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-user-id': 1 // TODO: Lấy userId thực tế nếu có auth
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           cartItems: cartItems.map(i => ({
@@ -80,43 +83,46 @@ const CheckoutConfirmStep = ({ cartItems, deliveryAddress, notes, setNotes, onBa
             🛒 Sản phẩm đã chọn
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {cartItems.map((item, idx) => (
-              <div 
-                key={item.itemId ? `item-${item.itemId}` : `idx-${idx}`}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '16px',
-                  background: 'white',
-                  borderRadius: '12px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                }}
-              >
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: '600', color: '#333', marginBottom: '4px' }}>
-                    {item.name}
+            {cartItems.map((item, idx) => {
+              const foodName = item.name || (item.food && item.food.name) || '';
+              return (
+                <div 
+                  key={item.itemId ? `item-${item.itemId}` : `idx-${idx}`}
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '16px',
+                    background: 'white',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    transition: 'transform 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+                      {foodName}
+                    </div>
+                    <div style={{ color: '#666', fontSize: '14px' }}>
+                      Số lượng: {item.quantity}
+                    </div>
                   </div>
-                  <div style={{ color: '#666', fontSize: '14px' }}>
-                    Số lượng: {item.quantity}
+                  <div style={{ 
+                    fontWeight: '600',
+                    color: '#667eea',
+                    fontSize: '16px'
+                  }}>
+                    {(item.price * item.quantity).toLocaleString()}₫
                   </div>
                 </div>
-                <div style={{ 
-                  fontWeight: '600',
-                  color: '#667eea',
-                  fontSize: '16px'
-                }}>
-                  {(item.price * item.quantity).toLocaleString()}₫
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

@@ -15,31 +15,10 @@ function RestaurantDetailPage({ restaurantId, onBack, user }) {
       alert('Vui lòng đăng nhập để thêm món vào giỏ hàng.');
       return;
     }
-
     try {
-      const response = await fetch('http://localhost:5000/api/cart/add', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: user.username,
-          foodId: foodId,
-          quantity: 1
-        })
-      });
-
-      if (response.ok) {
-        const food = foods.find(f => f.id === foodId);
-        addItem({
-          id: foodId,
-          name: food.name,
-          price: food.price,
-          imageUrl: food.imageUrl,
-          restaurantName: restaurant.name
-        });
-        alert('Đã thêm món vào giỏ hàng!');
-      } else {
-        alert('Không thể thêm món vào giỏ hàng.');
-      }
+      await addItem(foodId, 1);
+      // Hiện thông báo toast khi thêm thành công
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Đã thêm món vào giỏ hàng!' } }));
     } catch (err) {
       console.error('Add to cart error:', err);
       alert('Lỗi khi thêm vào giỏ hàng.');

@@ -7,19 +7,11 @@ const { Op } = require('sequelize');
 const OrderStatusHistory = require('../models/OrderStatusHistory');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
-// TODO: Thay thế bằng middleware xác thực JWT thực tế nếu đã có
-const authenticate = (req, res, next) => {
-  // Giả lập: userId từ header (dev only)
-  const userId = req.headers['x-user-id'];
-  if (!userId) return res.status(401).json({ message: 'Unauthorized' });
-  req.user = { id: parseInt(userId) };
-  next();
-};
 /**
  * POST /api/orders
  * Tạo đơn hàng mới
  */
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { cartItems, deliveryAddress, notes, shippingFee = 0, totalAmount } = req.body;

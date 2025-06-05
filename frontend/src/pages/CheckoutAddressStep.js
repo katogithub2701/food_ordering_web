@@ -35,8 +35,10 @@ const CheckoutAddressStep = ({ deliveryAddress, setDeliveryAddress, onNext, onBa
 
   // Lấy danh sách địa chỉ đã lưu khi load
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return; // Có thể chuyển hướng về login nếu cần
     fetch('http://localhost:5000/api/users/me/addresses', {
-      headers: { 'x-user-id': 1 }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())
       .then(data => setSavedAddresses(Array.isArray(data) ? data : []));
@@ -79,9 +81,11 @@ const CheckoutAddressStep = ({ deliveryAddress, setDeliveryAddress, onNext, onBa
       setDeliveryAddress(form);
       // Nếu là địa chỉ mới và muốn lưu lại
       if (saveNew && !selectedAddressId) {
+        const token = localStorage.getItem('token');
+        if (!token) return setError('Bạn cần đăng nhập để lưu địa chỉ!');
         await fetch('http://localhost:5000/api/users/me/addresses', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'x-user-id': 1 },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(form)
         });
       }

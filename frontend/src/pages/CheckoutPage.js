@@ -104,19 +104,35 @@ const CheckoutPage = ({ cart, onOrderSuccess }) => {
       onOrderSuccess(orderResult.orderId);
     }
   };
-  // Render từng bước
+  // Thêm nút quay về trang chủ và danh sách món ăn đã đặt
   return (
     <div style={{ 
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)',
       padding: '1rem'
     }}>
-      <div style={{ 
-        maxWidth: '600px', 
-        margin: '0 auto'
-      }}>
+      <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+        {/* Nút quay về trang chủ */}
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+          <a href="/" style={{
+            display: 'inline-block',
+            padding: '8px 20px',
+            border: '2px solid #ff7043',
+            color: '#ff7043',
+            borderRadius: '8px',
+            textDecoration: 'none',
+            fontWeight: 600,
+            fontSize: 16,
+            marginRight: 16,
+            transition: 'all 0.2s',
+          }}
+            onMouseOver={e => { e.target.style.background = '#ff7043'; e.target.style.color = '#fff'; }}
+            onMouseOut={e => { e.target.style.background = 'transparent'; e.target.style.color = '#ff7043'; }}
+          >
+            ← Về trang chủ
+          </a>
+        </div>
         <Stepper step={step} />
-        
         <div style={{
           background: '#fff',
           borderRadius: '24px',
@@ -125,11 +141,19 @@ const CheckoutPage = ({ cart, onOrderSuccess }) => {
           minHeight: '500px'
         }}>
           {step === 0 && (
-            <CheckoutCartStep
-              cartItems={cartItems}
-              setCartItems={setCartItems}
-              onNext={nextStep}
-            />
+            <>
+              <CheckoutCartStep
+                cartItems={cartItems}
+                setCartItems={setCartItems}
+                onNext={nextStep}
+              />
+              {/* Danh sách tên món ăn đã đặt */}
+              {cartItems && cartItems.length > 0 && (
+                <div style={{ fontSize: 15, color: '#333', fontWeight: 500, overflowX: 'auto', whiteSpace: 'nowrap', margin: '16px 0 0 0', textAlign: 'center' }}>
+                  Đã chọn: {cartItems.map(item => item.name || (item.food && item.food.name) || '').filter(Boolean).join(', ')}
+                </div>
+              )}
+            </>
           )}
           {step === 1 && (
             <CheckoutAddressStep
@@ -149,6 +173,7 @@ const CheckoutPage = ({ cart, onOrderSuccess }) => {
               setShippingFee={setShippingFee}
               onBack={prevStep}
               setOrderResult={handleOrderSuccess}
+              user={JSON.parse(localStorage.getItem('user') || '{}')}
             />
           )}
         </div>
