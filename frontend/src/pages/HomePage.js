@@ -139,9 +139,7 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
               🔍 Tìm kiếm nâng cao
             </button>
           </div>
-        </div>
-
-        {/* Featured Restaurants - Hide when searching for foods */}
+        </div>        {/* Featured Restaurants - Hide when searching for foods */}
         {!search && (
           <section style={{ marginBottom: '3rem' }}>
             <h2 style={{ color: '#ff7043', marginBottom: '1.5rem' }}>Nhà hàng nổi bật</h2>
@@ -149,6 +147,65 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
               <div>Đang tải danh sách nhà hàng...</div>
             ) : errorRestaurants ? (
               <div style={{ color: 'red' }}>{errorRestaurants}</div>
+            ) : restaurants.length === 0 ? (
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '3rem 2rem',
+                background: '#fff',
+                borderRadius: '16px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
+              }}>
+                <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🏪</div>
+                <h3 style={{ 
+                  color: '#666', 
+                  fontSize: '1.5rem', 
+                  marginBottom: '1rem',
+                  fontWeight: '600'
+                }}>
+                  Hiện tại không có nhà hàng nào, quý khách thông cảm
+                </h3>                <div style={{
+                  background: 'linear-gradient(135deg, #ff7043 0%, #ff5722 100%)',
+                  color: '#fff',
+                  padding: '1rem 2rem',
+                  borderRadius: '12px',
+                  fontSize: '1.1rem',
+                  fontWeight: '600',
+                  marginTop: '1.5rem',
+                  display: 'inline-block'
+                }}>
+                  💼 Bạn muốn trở thành thành viên trong mạng lưới của chúng tôi?
+                </div>                <button 
+                  onClick={() => { 
+                    setShowAuth(true); 
+                    setAuthMode('restaurant'); 
+                  }}
+                  style={{
+                    background: '#4CAF50',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '1rem 2rem',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    marginTop: '1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 4px 12px rgba(76, 175, 80, 0.3)'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.background = '#45a049';
+                    e.target.style.transform = 'translateY(-2px)';
+                    e.target.style.boxShadow = '0 6px 16px rgba(76, 175, 80, 0.4)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.background = '#4CAF50';
+                    e.target.style.transform = 'translateY(0)';
+                    e.target.style.boxShadow = '0 4px 12px rgba(76, 175, 80, 0.3)';
+                  }}
+                >
+                  🏪 Đăng ký ngay!
+                </button>
+              </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
                 {restaurants.slice(0, 4).map((restaurant) => (
@@ -214,9 +271,7 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
               </div>
             )}
           </section>
-        )}
-
-        {/* Featured Foods */}
+        )}        {/* Featured Foods */}
         <section>
           <h2 style={{ color: '#ff7043', marginBottom: '1.5rem' }}>
             {search ? `Kết quả tìm kiếm "${search}"` : 'Món ăn nổi bật'}
@@ -225,11 +280,36 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
             <div>Đang tải danh sách món ăn...</div>
           ) : errorFoods ? (
             <div style={{ color: 'red' }}>{errorFoods}</div>
+          ) : foods.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '3rem 2rem',
+              background: '#fff',
+              borderRadius: '16px',
+              boxShadow: '0 4px 16px rgba(0,0,0,0.08)'
+            }}>
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🍽️</div>
+              <h3 style={{ 
+                color: '#666', 
+                fontSize: '1.5rem', 
+                marginBottom: '1rem',
+                fontWeight: '600'
+              }}>
+                Hiện tại chưa có món ăn nào
+              </h3>
+              <div style={{
+                fontSize: '1rem',
+                color: '#888',
+                fontStyle: 'italic'
+              }}>
+                Các nhà hàng sẽ sớm cập nhật thực đơn!
+              </div>
+            </div>
           ) : (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
               {filteredFoods.length === 0 ? (
                 <div style={{ color: '#888', fontSize: 18, gridColumn: '1 / -1', textAlign: 'center' }}>Không tìm thấy món ăn phù hợp.</div>
-              ) : (                filteredFoods.map((food) => (
+              ) : (filteredFoods.map((food) => (
                   <div 
                     key={food.id} 
                     onClick={() => setSelectedFood(food)}                    style={{ 
