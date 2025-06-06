@@ -71,9 +71,7 @@ app.post('/api/register', async (req, res) => {
     const bcrypt = require('bcryptjs');
     const hash = await bcrypt.hash(password, 8);
     
-    let finalRestaurantId = restaurantId;
-    
-    // If creating a new restaurant
+    let finalRestaurantId = restaurantId;    // If creating a new restaurant
     if (role === 'restaurant' && restaurantData) {
       const newRestaurant = await Restaurant.create({
         name: restaurantData.name,
@@ -83,8 +81,9 @@ app.post('/api/register', async (req, res) => {
         category: restaurantData.category || 'Tổng hợp',
         rating: 0,
         isActive: true,
-        openTime: '06:00',
-        closeTime: '22:00'
+        openTime: restaurantData.openTime || '06:00',
+        closeTime: restaurantData.closeTime || '22:00',
+        imageUrl: restaurantData.imageUrl || null
       });
       finalRestaurantId = newRestaurant.id;
     }

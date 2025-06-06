@@ -226,15 +226,13 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
           ) : errorFoods ? (
             <div style={{ color: 'red' }}>{errorFoods}</div>
           ) : (
-            <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
               {filteredFoods.length === 0 ? (
-                <div style={{ color: '#888', fontSize: 18 }}>Không tìm thấy món ăn phù hợp.</div>
+                <div style={{ color: '#888', fontSize: 18, gridColumn: '1 / -1', textAlign: 'center' }}>Không tìm thấy món ăn phù hợp.</div>
               ) : (                filteredFoods.map((food) => (
                   <div 
                     key={food.id} 
-                    onClick={() => setSelectedFood(food)}
-                    style={{ 
-                      width: 260, 
+                    onClick={() => setSelectedFood(food)}                    style={{ 
                       background: '#fbe9e7', 
                       borderRadius: 8, 
                       padding: 16, 
@@ -255,10 +253,30 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
                   >
                     {food.imageUrl && (
                       <img src={food.imageUrl} alt={food.name} style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 6, marginBottom: 8 }} />
-                    )}
-                    <div style={{ fontWeight: 600, color: '#ff7043', fontSize: 17 }}>{food.name}</div>
+                    )}                    <div style={{ fontWeight: 600, color: '#ff7043', fontSize: 17 }}>{food.name}</div>
                     {food.restaurant && (
-                      <div style={{ fontSize: 13, color: '#666', margin: '4px 0', fontStyle: 'italic' }}>
+                      <div 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedRestaurantId(food.restaurant.id);
+                        }}
+                        style={{ 
+                          fontSize: 13, 
+                          color: '#666', 
+                          margin: '4px 0', 
+                          fontStyle: 'italic',
+                          cursor: 'pointer',
+                          transition: 'color 0.2s ease'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.color = '#ff7043';
+                          e.target.style.textDecoration = 'underline';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.color = '#666';
+                          e.target.style.textDecoration = 'none';
+                        }}
+                      >
                         🏪 {food.restaurant.name}
                       </div>
                     )}
@@ -402,12 +420,27 @@ function HomePage({ user, setUser, showAuth, setShowAuth, authMode, setAuthMode,
                     marginBottom: '0.5rem'
                   }}>
                     Nhà hàng
-                  </div>
-                  <div style={{
-                    color: '#ff7043',
-                    fontWeight: '600',
-                    fontSize: '16px'
-                  }}>
+                  </div>                  <div 
+                    onClick={() => {
+                      setSelectedFood(null);
+                      setSelectedRestaurantId(selectedFood.restaurant.id);
+                    }}
+                    style={{
+                      color: '#ff7043',
+                      fontWeight: '600',
+                      fontSize: '16px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseOver={(e) => {
+                      e.target.style.textDecoration = 'underline';
+                      e.target.style.color = '#ff5722';
+                    }}
+                    onMouseOut={(e) => {
+                      e.target.style.textDecoration = 'none';
+                      e.target.style.color = '#ff7043';
+                    }}
+                  >
                     🏪 {selectedFood.restaurant.name}
                   </div>
                   {selectedFood.restaurant.address && (

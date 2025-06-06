@@ -16,7 +16,8 @@ router.get('/', async (req, res) => {
         where: { isActive: true },
         required: false
       }],
-      where: { isAvailable: true }
+      where: { isAvailable: true },
+      order: [['rating', 'DESC'], ['name', 'ASC']]
     });
     res.json(foods.map(food => ({
       id: food.id,
