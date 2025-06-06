@@ -80,7 +80,7 @@ function LoginForm({ onSubmit, onShowRegistration, loading, message }) {
 }
 
 function AuthPage({ initialMode = 'login', onClose, setUser }) {
-  const [currentView, setCurrentView] = useState('login'); // 'login' or 'registration'
+  const [currentView, setCurrentView] = useState(initialMode === 'restaurant' ? 'registration' : 'login'); // 'login' or 'registration'
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -119,11 +119,9 @@ function AuthPage({ initialMode = 'login', onClose, setUser }) {
   const handleBackToLogin = () => {
     setCurrentView('login');
     setMessage('');
-  };
-
-  // Show registration page
+  };  // Show registration page
   if (currentView === 'registration') {
-    return <RegistrationPage onClose={handleBackToLogin} setUser={setUser} />;
+    return <RegistrationPage onClose={handleBackToLogin} setUser={setUser} initialMode={initialMode === 'restaurant' ? 'restaurant' : 'roleSelection'} />;
   }
 
   // Show login page

@@ -520,8 +520,8 @@ function RestaurantRegistrationForm({ onSubmit, onBack, loading, message }) {  c
 }
 
 // Main Registration Page Component
-function RegistrationPage({ onClose, setUser }) {
-  const [currentStep, setCurrentStep] = useState('roleSelection'); // roleSelection, customer, restaurant
+function RegistrationPage({ onClose, setUser, initialMode = 'roleSelection' }) {
+  const [currentStep, setCurrentStep] = useState(initialMode); // roleSelection, customer, restaurant
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
 
